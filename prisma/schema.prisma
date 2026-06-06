@@ -1,0 +1,1167 @@
+// 3Wi PMO Suite — Prisma schema
+// Multi-tenant. RLS enforced at Postgres level (see supabase/migrations/0002_rls.sql).
+// Every tenant-scoped table carries `tenantId` and is protected by RLS that compares it to
+// `current_setting('app.tenant_id')`. The API sets that GUC on every request via the
+// `tenant` middleware before issuing queries, so even a leaked SQL string can't cross tenants.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -------------------------------------------------------------------- Tenants
+
+model Tenant {
+  id                  String   @id @default(uuid()) @db.Uuid
+  name                String
+  slug                String   @unique
+  brandColorPrimary   String   @default("#0F172A") @map("brand_color_primary")
+  brandColorSecondary String   @default("#0EA5A4") @map("brand_color_secondary")
+  brandColorAccent    String   @default("#F59E0B") @map("brand_color_accent")
+  logoUrl             String?  @map("logo_url")
+  subscriptionTier    String   @default("starter") @map("subscription_tier") // starter | professional | enterprise
+  stripeCustomerId    String?  @unique @map("stripe_customer_id")
+  billingEmail        String?  @map("billing_email")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  clients       Client[]
+  projects      Project[]
+  reports       Report[]
+  aiPrompts     AiPrompt[]
+  subscriptions Subscription[]
+  invoices      Invoice[]
+  auditLog      AuditLog[]
+  parts         Part[]
+  deliverables  Deliverable[]
+  growers       Grower[]
+  disbursements Disbursement[]
+  signoffs      DisbursementSignoff[]
+
+  // 0005 — payment verification & sign-off
+  releaseBatches        ReleaseBatch[]
+  farmerSignoffs        FarmerSignoff[]
+  verificationSignoffs  VerificationSignoff[]
+  releaseSignoffs       ReleaseSignoff[]
+  paymentRecords        PaymentRecord[]
+
+  @@map("tenants")
+  offtakerAttachments        OfftakerAttachment[]
+}
+
+// -------------------------------------------------------------------- Clients
+//
+// A `Client` is a CUSTOMER OF THE TENANT — distinct from the tenant itself.
+// Hierarchy:  3Wi (platform)  →  Tenant (e.g. IBS)  →  Client (e.g. Hempire-EC)  →  Project (e.g. Sunshines)
+// Each Tenant manages many Clients; each Client owns many Projects.
+// White-label brand colours can be set per-Client so the Client's projects render
+// in their brand (e.g. Sunshines users see Hempire colours).
+
+model Client {
+  id                    String   @id @default(uuid()) @db.Uuid
+  tenantId              String   @map("tenant_id") @db.Uuid
+  name                  String   // "Hempire-EC NPC"
+  slug                  String   // "hempire-ec"
+  legalName             String?  @map("legal_name") // "Hempire Eastern Cape NPC"
+  registrationNumber    String?  @map("registration_number") // SA company reg no.
+  vatNumber             String?  @map("vat_number")
+  brandColorPrimary     String?  @map("brand_color_primary")   // #3F1101 for Hempire
+  brandColorSecondary   String?  @map("brand_color_secondary") // #015807
+  brandColorAccent      String?  @map("brand_color_accent")    // #FDF31C
+  logoUrl               String?  @map("logo_url")
+  primaryContactName    String?  @map("primary_contact_name")
+  primaryContactEmail   String?  @map("primary_contact_email")
+  status                String   @default("active") // active | paused | archived
+  notes                 String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("clients")
+}
+
+// -------------------------------------------------------------------- Users
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  email     String?  @unique
+  phone     String?  @unique
+  pinHash   String?  @map("pin_hash") // bcrypt — farmers only
+  passwordHash String? @map("password_hash") // bcrypt — director / staff
+  fullName  String   @map("full_name")
+  role      String   // director | psc | farmer | technical | offtaker
+  district  String?
+  status    String   @default("active") // active | inactive | suspended
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectUsers ProjectUser[]
+  helpRequests HelpRequest[]  @relation("FarmerHelpRequests")
+  responded    HelpRequest[]  @relation("HelpResponders")
+  photoUploads PhotoUpload[]
+  reviewed     PhotoUpload[]  @relation("PhotoReviewers")
+  reportsMade  Report[]       @relation("ReportAuthor")
+  gateAudits   GateAudit[]
+  promptEdits  AiPrompt[]
+  auditEntries AuditLog[]
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+// -------------------------------------------------------------------- Projects
+
+model Project {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  clientId     String?  @map("client_id") @db.Uuid // optional for back-compat; new projects should set this
+  name         String
+  code         String
+  description  String?
+  status       String   @default("active") // active | paused | closed
+  startDate    DateTime @map("start_date") @db.Date
+  endDate      DateTime @map("end_date") @db.Date
+  // Sunshines: corrected envelope is R4,800,000 (down from earlier R8.7m).
+  totalBudget  Decimal  @map("total_budget") @db.Decimal(14, 2)
+  funder       String
+  moaReference String?  @map("moa_reference")
+  tagline      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client       Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  workstreams  Workstream[]
+  milestones   Milestone[]
+  risks        Risk[]
+  projectUsers ProjectUser[]
+  helpRequests HelpRequest[]
+  photoUploads PhotoUpload[]
+  gateAudits   GateAudit[]
+  reports      Report[]
+  aiPrompts    AiPrompt[]
+  parts         Part[]
+  deliverables  Deliverable[]
+  growers       Grower[]
+  disbursements Disbursement[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([clientId])
+  @@map("projects")
+}
+
+// -------------------------------------------------------------------- Workstreams
+
+model Workstream {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  code      String   // A, B, C ...
+  name      String
+  budget    Decimal  @db.Decimal(14, 2)
+  leadRole  String   @map("lead_role")
+  colour    String   @default("#0EA5A4")
+  icon      String   @default("Briefcase")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, code])
+  @@index([projectId])
+  @@map("workstreams")
+}
+
+// -------------------------------------------------------------------- Milestones
+
+model Milestone {
+  id              String   @id @default(uuid()) @db.Uuid
+  projectId       String   @map("project_id") @db.Uuid
+  workstreamIds   String[] @map("workstream_ids") @db.Uuid
+  code            String   // M01, M02 ...
+  label           String
+  dueDate         DateTime @map("due_date") @db.Date
+  status          String   @default("pending") // pending | in_progress | done | blocked
+  completionPct   Int      @default(0) @map("completion_pct")
+  paymentAmount   Decimal? @map("payment_amount") @db.Decimal(14, 2)
+  gateEvidence    Json?    @map("gate_evidence")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, code])
+  @@index([projectId])
+  @@map("milestones")
+}
+
+// -------------------------------------------------------------------- Risks
+
+model Risk {
+  id            String   @id @default(uuid()) @db.Uuid
+  projectId     String   @map("project_id") @db.Uuid
+  code          String   // R01, R02 ...
+  label         String
+  likelihood    Int      // 1..5
+  impact        Int      // 1..5
+  ragStatus     String   @map("rag_status") // green | amber | red
+  controlAction String   @map("control_action")
+  owner         String
+  pfmaFlag      Boolean  @default(false) @map("pfma_flag")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, code])
+  @@index([projectId])
+  @@map("risks")
+}
+
+// -------------------------------------------------------------------- Project Users (membership)
+
+model ProjectUser {
+  id            String   @id @default(uuid()) @db.Uuid
+  projectId     String   @map("project_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  commandCentre String   @map("command_centre") // director|psc|farmer|technical|offtaker
+  accessLevel   String   @default("read") @map("access_level") // read | write | admin
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@map("project_users")
+}
+
+// -------------------------------------------------------------------- Help Requests
+
+model HelpRequest {
+  id            String    @id @default(uuid()) @db.Uuid
+  projectId     String    @map("project_id") @db.Uuid
+  farmerUserId  String    @map("farmer_user_id") @db.Uuid
+  gate          String?
+  message       String
+  photoUrl      String?   @map("photo_url")
+  status        String    @default("open") // open | responded | closed | breached
+  response      String?
+  responderId   String?   @map("responder_id") @db.Uuid
+  respondedAt   DateTime? @map("responded_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  farmer    User    @relation("FarmerHelpRequests", fields: [farmerUserId], references: [id], onDelete: Cascade)
+  responder User?   @relation("HelpResponders", fields: [responderId], references: [id])
+
+  @@index([projectId, status])
+  @@map("help_requests")
+}
+
+// -------------------------------------------------------------------- Photo Uploads
+
+model PhotoUpload {
+  id         String    @id @default(uuid()) @db.Uuid
+  projectId  String    @map("project_id") @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  gate       String?
+  url        String
+  geoLat     Decimal?  @map("geo_lat") @db.Decimal(10, 6)
+  geoLng     Decimal?  @map("geo_lng") @db.Decimal(10, 6)
+  note       String?
+  reviewed   Boolean   @default(false)
+  reviewerId String?   @map("reviewer_id") @db.Uuid
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User?   @relation("PhotoReviewers", fields: [reviewerId], references: [id])
+
+  @@index([projectId, reviewed])
+  @@map("photo_uploads")
+}
+
+// -------------------------------------------------------------------- Gate Audits
+
+model GateAudit {
+  id            String   @id @default(uuid()) @db.Uuid
+  projectId     String   @map("project_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  gate          String   // G0..G5
+  pass          Boolean
+  evidenceItems Json     @map("evidence_items")
+  photos        String[] @default([])
+  ncrRaised     Boolean  @default(false) @map("ncr_raised")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, gate])
+  @@map("gate_audits")
+}
+
+// -------------------------------------------------------------------- Reports (AI outputs)
+
+model Report {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  reportType  String   @map("report_type") // monthly_ops | risk_update | mov_pack | quarterly_report | stakeholder_comms
+  generatedBy String   @map("generated_by") @db.Uuid
+  promptUsed  String   @map("prompt_used") @db.Text
+  inputText   String?  @map("input_text") @db.Text
+  content     String   @db.Text
+  status      String   @default("draft") // draft | finalised | sent
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author  User    @relation("ReportAuthor", fields: [generatedBy], references: [id])
+
+  @@index([tenantId, projectId])
+  @@map("reports")
+}
+
+// -------------------------------------------------------------------- AI Prompts (per tenant per skill)
+
+model AiPrompt {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  projectId     String?  @map("project_id") @db.Uuid // optional project-scoped override
+  skillType     String   @map("skill_type") // monthly_ops | risk_update | mov_pack | quarterly_report | stakeholder_comms
+  systemPrompt  String   @map("system_prompt") @db.Text
+  updatedById   String?  @map("updated_by") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project  Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  updatedBy User?   @relation(fields: [updatedById], references: [id])
+
+  @@unique([tenantId, projectId, skillType])
+  @@index([tenantId])
+  @@map("ai_prompts")
+}
+
+// -------------------------------------------------------------------- Subscriptions
+
+model Subscription {
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenantId             String   @map("tenant_id") @db.Uuid
+  plan                 String   // starter | professional | enterprise | custom
+  activeUsers          Int      @default(0) @map("active_users")
+  reportsThisMonth     Int      @default(0) @map("reports_this_month")
+  monthlyFee           Decimal  @map("monthly_fee") @db.Decimal(12, 2)
+  userFeePerMonth      Decimal  @default(1500) @map("user_fee_per_month") @db.Decimal(10, 2)
+  reportFee            Decimal  @default(1000) @map("report_fee") @db.Decimal(10, 2)
+  vatRate              Decimal  @default(0) @map("vat_rate") @db.Decimal(5, 4)
+  stripeSubscriptionId String?  @unique @map("stripe_subscription_id")
+  billingAnchor        Int      @default(1) @map("billing_anchor") // day of month
+  status               String   @default("active") // active | past_due | cancelled
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("subscriptions")
+}
+
+// -------------------------------------------------------------------- Invoices
+
+model Invoice {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  periodStart     DateTime  @map("period_start") @db.Date
+  periodEnd       DateTime  @map("period_end") @db.Date
+  activeUsers     Int       @map("active_users")
+  reportsCount    Int       @map("reports_count")
+  subtotal        Decimal   @db.Decimal(12, 2)
+  vatAmount       Decimal   @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  totalAmount     Decimal   @map("total_amount") @db.Decimal(12, 2)
+  status          String    @default("open") // open | paid | overdue | void
+  stripeInvoiceId String?   @unique @map("stripe_invoice_id")
+  paidAt          DateTime? @map("paid_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@map("invoices")
+}
+
+// -------------------------------------------------------------------- Audit Log
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, entityType])
+  @@map("audit_log")
+}
+
+// -------------------------------------------------------------------- Parts
+//
+// A `Part` is a programme phase WITHIN a Project. Sunshines has two:
+//   Part 1 — Seedlings Cohort (lead funder ECRDA, 46 growers)
+//   Part 2 — DSBD Seed Cohort (lead funder DSBD)
+// Each Part owns its own Deliverables and (for production parts) Growers
+// and Disbursements. Splitting a Project into Parts lets a single
+// management contract cover multiple funder cohorts with separate
+// budgets, deliverables, and reporting.
+
+model Part {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  projectId        String    @map("project_id") @db.Uuid
+  code             String    // P1, P2 ...
+  name             String    // "Seedlings Cohort"
+  description      String?
+  leadFunder       String    @map("lead_funder")          // ECRDA | DSBD | ...
+  budgetAllocation Decimal?  @map("budget_allocation") @db.Decimal(14, 2)
+  startDate        DateTime? @map("start_date") @db.Date
+  endDate          DateTime? @map("end_date") @db.Date
+  status           String    @default("active") // active | paused | closed
+  sortOrder        Int       @default(0) @map("sort_order")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliverables  Deliverable[]
+  growers       Grower[]
+  disbursements Disbursement[]
+
+  @@unique([projectId, code])
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("parts")
+}
+
+// -------------------------------------------------------------------- Deliverables
+//
+// Higher-level unit than `Milestone` — a Deliverable (D1, D2, D3 ...) is
+// the contractually named output a funder pays against. The existing
+// Milestone model is retained for the lower-level G0..G5 gate audits;
+// a Deliverable can be backed by many Milestones.
+
+model Deliverable {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  projectId       String    @map("project_id") @db.Uuid
+  partId          String?   @map("part_id") @db.Uuid
+  code            String    // D1, D2, D3 ...
+  title           String
+  description     String?
+  owner           String?
+  dueDate         DateTime? @map("due_date") @db.Date
+  status          String    @default("On track") // At risk | On track | Complete | Delayed | Future
+  percentComplete Int       @default(0) @map("percent_complete")
+  payment         Decimal?  @db.Decimal(14, 2)
+  funder          String?
+  evidenceUrl     String?   @map("evidence_url")
+  notes           String?
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  part    Part?   @relation(fields: [partId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, code])
+  @@index([tenantId])
+  @@index([projectId, status])
+  @@index([partId])
+  @@map("deliverables")
+}
+
+// -------------------------------------------------------------------- Growers
+//
+// One row per farmer in a Part's grower register. Part 1 (Seedlings
+// Cohort) has 46 of these. `externalRef` is the # column from the
+// canonical spreadsheet so we can round-trip with the field team's
+// existing workbook.
+
+model Grower {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  projectId        String    @map("project_id") @db.Uuid
+  partId           String    @map("part_id") @db.Uuid
+  externalRef      Int       @map("external_ref") // # from spreadsheet
+  fullName         String    @map("full_name")
+  farmName         String?   @map("farm_name")
+  district         String?
+  region           String?   // Eastern | Northern | Southern
+  coordinator      String?
+  phone            String?
+  email            String?
+  idNumber         String?   @map("id_number")
+  seedlingsPlanned Int       @default(0) @map("seedlings_planned")
+  seedlingsReceived Int      @default(0) @map("seedlings_received")
+  deliveryGap      Int       @default(0) @map("delivery_gap")
+  plannedHa        Decimal   @default(0) @map("planned_ha") @db.Decimal(14, 4)
+  mappedHa         Decimal   @default(0) @map("mapped_ha") @db.Decimal(14, 4)
+  theoreticalHa    Decimal   @default(0) @map("theoretical_ha") @db.Decimal(14, 4)
+  outlierFlag      Boolean   @default(false) @map("outlier_flag")
+  enrolledAt       DateTime? @map("enrolled_at")
+  status           String    @default("active") // active | inactive | dropped
+  notes            String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  tenant        Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project       Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  part          Part                   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  disbursements Disbursement[]
+  signoffs      DisbursementSignoff[]
+  farmerSignoffs FarmerSignoff[]
+
+  @@unique([projectId, externalRef])
+  @@index([tenantId])
+  @@index([partId])
+  @@index([projectId, status])
+  @@map("growers")
+}
+
+// -------------------------------------------------------------------- Disbursements
+//
+// Rate-based per-grower payment calculation. For Sunshines Part 1 the
+// rates are R7,350.00/ha (mechanisation) + R3,618.72/ha (labour) =
+// R10,968.72/ha. `fundedHa` defaults to the grower's `mappedHa` and
+// the three amount columns are stored (denormalised) so reports can
+// query without recomputing.
+//
+// Modelled 1:many to allow tranches in future; for v1 there is one
+// Disbursement per Grower.
+
+model Disbursement {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  projectId          String    @map("project_id") @db.Uuid
+  partId             String    @map("part_id") @db.Uuid
+  growerId           String    @map("grower_id") @db.Uuid
+  fundedHa           Decimal   @default(0) @map("funded_ha") @db.Decimal(14, 4)
+  rateMechanisation  Decimal   @default(7350.00) @map("rate_mechanisation") @db.Decimal(14, 2)
+  rateLabour         Decimal   @default(3618.72) @map("rate_labour") @db.Decimal(14, 2)
+  amountMechanisation Decimal  @default(0) @map("amount_mechanisation") @db.Decimal(14, 2)
+  amountLabour       Decimal   @default(0) @map("amount_labour") @db.Decimal(14, 2)
+  amountTotal        Decimal   @default(0) @map("amount_total") @db.Decimal(14, 2)
+  status             String    @default("Pending") // (legacy) Pending | Approved | Paid | On hold
+  paidAt             DateTime? @map("paid_at")
+  evidenceUrl        String?   @map("evidence_url")
+  notes              String?
+
+  // 0005 — payment verification process state
+  // 10-state machine: Awaiting Beneficiary | Beneficiary-Accepted | Disputed |
+  //   Calculation-Verified | Calculation-Rejected | Release-Authorised | On Hold |
+  //   Payment Pending | Paid | Payment Failed
+  processStatus      String    @default("Awaiting Beneficiary") @map("process_status")
+  processStatusAt    DateTime  @default(now()) @map("process_status_at")
+  releaseBatchId     String?   @map("release_batch_id") @db.Uuid
+
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  tenant              Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project             Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  part                Part                    @relation(fields: [partId], references: [id], onDelete: Cascade)
+  grower              Grower                  @relation(fields: [growerId], references: [id], onDelete: Cascade)
+  signoffs            DisbursementSignoff[]
+  releaseBatch        ReleaseBatch?           @relation(fields: [releaseBatchId], references: [id], onDelete: SetNull)
+  farmerSignoff       FarmerSignoff?
+  verificationSignoff VerificationSignoff?
+  paymentRecord       PaymentRecord?
+
+  @@index([tenantId])
+  @@index([partId, status])
+  @@index([growerId])
+  @@index([tenantId, processStatus])
+  @@index([releaseBatchId])
+  @@map("disbursements")
+}
+
+// -------------------------------------------------------------------- Disbursement Sign-offs
+//
+// Captures farmer agreement on the disbursement calculation. One
+// disbursement may pass through multiple sign-off attempts (initial
+// dispute, then signed) so this is a 1:many table. Witness fields
+// are for the field officer who countersigns on the day.
+
+model DisbursementSignoff {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  disbursementId  String    @map("disbursement_id") @db.Uuid
+  growerId        String    @map("grower_id") @db.Uuid
+  signoffStatus   String    @default("Awaiting") @map("signoff_status") // Awaiting | Disputed | Signed | Withdrawn
+  signedAt        DateTime? @map("signed_at")
+  witnessName     String?   @map("witness_name")
+  witnessEmail    String?   @map("witness_email")
+  signatureRef    String?   @map("signature_ref") // file path or hash
+  notesFromGrower String?   @map("notes_from_grower")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  disbursement Disbursement @relation(fields: [disbursementId], references: [id], onDelete: Cascade)
+  grower       Grower       @relation(fields: [growerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([disbursementId])
+  @@index([growerId, signoffStatus])
+  @@map("disbursement_signoffs")
+}
+
+// ============================================================================
+// 0005 — Payment Verification & Sign-Off
+// Four-gate disbursement governance per Hempire-EC NPC process design.
+// See:
+//   Sunshines_Inception_Section_Disbursement_Process.docx (operational design)
+//   supabase/migrations/0005_payment_verification.sql      (DDL)
+// ============================================================================
+
+// --------------------------------------------------------------- ReleaseBatch
+//
+// Groups Calc-Verified disbursements for a single authorisation event by the
+// named Release Authoriser (Dr Blouw). A batch may contain 1..n disbursements.
+
+model ReleaseBatch {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  projectId    String   @map("project_id") @db.Uuid
+  partId       String   @map("part_id") @db.Uuid
+  batchCode    String   @map("batch_code") // e.g. "B-2026-05-001"
+  totalAmount  Decimal  @default(0) @map("total_amount") @db.Decimal(14, 2)
+  growerCount  Int      @default(0) @map("grower_count")
+  status       String   @default("pending_auth") // pending_auth | authorised | paid | on_hold | cancelled
+  createdBy    String?  @map("created_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant         Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  disbursements  Disbursement[]
+  releaseSignoff ReleaseSignoff?
+  paymentRecords PaymentRecord[]
+
+  @@unique([projectId, batchCode])
+  @@index([tenantId])
+  @@index([partId, status])
+  @@map("release_batches")
+}
+
+// --------------------------------------------------------------- FarmerSignoff
+//
+// Stage 2 — beneficiary self-verification + banking details + indemnity.
+// Banking columns are encrypted at rest (AES-256-GCM) by the API layer.
+
+model FarmerSignoff {
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @map("tenant_id") @db.Uuid
+  disbursementId           String    @unique @map("disbursement_id") @db.Uuid
+  growerId                 String    @map("grower_id") @db.Uuid
+
+  decision                 String    // accepted | disputed | no_response
+  signedFullName           String?   @map("signed_full_name")
+  signedAt                 DateTime? @map("signed_at")
+  signedIp                 String?   @map("signed_ip") @db.Inet
+  signedDeviceFingerprint  String?   @map("signed_device_fingerprint")
+  indemnityVersion         String    @default("1.0") @map("indemnity_version")
+
+  bankingAccountHolderEnc  String?   @map("banking_account_holder_enc")
+  bankingBank              String?   @map("banking_bank")
+  bankingAccountNumberEnc  String?   @map("banking_account_number_enc")
+  bankingBranchCodeEnc     String?   @map("banking_branch_code_enc")
+  bankingAccountType       String?   @map("banking_account_type")
+  bankingProofStorageKey   String?   @map("banking_proof_storage_key")
+
+  disputeReason            String?   @map("dispute_reason")
+  createdAt                DateTime  @default(now()) @map("created_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  disbursement Disbursement @relation(fields: [disbursementId], references: [id], onDelete: Cascade)
+  grower       Grower       @relation(fields: [growerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([growerId])
+  @@index([tenantId, decision])
+  @@map("farmer_signoffs")
+}
+
+// --------------------------------------------------------------- VerificationSignoff
+//
+// Stage 3 — calculation verification by named Technical Verifier (Mr Vuso).
+// 2FA-enforced at the application layer.
+
+model VerificationSignoff {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  disbursementId      String    @unique @map("disbursement_id") @db.Uuid
+  verifierUserId      String    @map("verifier_user_id") @db.Uuid
+
+  decision            String    // verified | rejected
+  signedFullName      String    @map("signed_full_name")
+  signedAt            DateTime  @default(now()) @map("signed_at")
+  signedIp            String?   @map("signed_ip") @db.Inet
+
+  twofaMethod         String?   @map("twofa_method") // totp | sms | webauthn
+  twofaEvidenceHash   String?   @map("twofa_evidence_hash")
+
+  formulaCheckPassed  Boolean   @default(true) @map("formula_check_passed")
+  rejectionReason     String?   @map("rejection_reason")
+  notes               String?
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  disbursement Disbursement @relation(fields: [disbursementId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([verifierUserId])
+  @@index([tenantId, decision])
+  @@map("verification_signoffs")
+}
+
+// --------------------------------------------------------------- ReleaseSignoff
+//
+// Stage 4 — release authorisation by named Release Authoriser (Dr Blouw).
+// One per batch (not per disbursement). 2FA-enforced.
+
+model ReleaseSignoff {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @map("tenant_id") @db.Uuid
+  releaseBatchId         String    @unique @map("release_batch_id") @db.Uuid
+  authoriserUserId       String    @map("authoriser_user_id") @db.Uuid
+
+  decision               String    // authorised | held
+  signedFullName         String    @map("signed_full_name")
+  signedAt               DateTime  @default(now()) @map("signed_at")
+  signedIp               String?   @map("signed_ip") @db.Inet
+
+  twofaMethod            String?   @map("twofa_method")
+  twofaEvidenceHash      String?   @map("twofa_evidence_hash")
+
+  holdReason             String?   @map("hold_reason")
+  governanceAttestation  Boolean   @default(false) @map("governance_attestation")
+
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  releaseBatch ReleaseBatch @relation(fields: [releaseBatchId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([authoriserUserId])
+  @@map("release_signoffs")
+}
+
+// --------------------------------------------------------------- PaymentRecord
+//
+// Stage 5 — bank confirmation + POP attachment. One per disbursement.
+
+model PaymentRecord {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  disbursementId    String    @unique @map("disbursement_id") @db.Uuid
+  releaseBatchId    String?   @map("release_batch_id") @db.Uuid
+
+  bankReference     String?   @map("bank_reference")
+  paymentDate       DateTime? @map("payment_date") @db.Date
+  amount            Decimal   @db.Decimal(14, 2)
+  status            String    @default("pending") // pending | paid | failed
+
+  failedReason      String?   @map("failed_reason")
+  popStorageKey     String?   @map("pop_storage_key")
+
+  capturedBy        String?   @map("captured_by") @db.Uuid
+  capturedAt        DateTime? @map("captured_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  disbursement Disbursement  @relation(fields: [disbursementId], references: [id], onDelete: Cascade)
+  releaseBatch ReleaseBatch? @relation(fields: [releaseBatchId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([releaseBatchId])
+  @@index([tenantId, status])
+  @@map("payment_records")
+}
+
+model OfftakerAttachment {
+  id                  String              @id @default(uuid()) @db.Uuid
+  tenantId            String              @map("tenant_id") @db.Uuid
+  submissionId        String              @map("submission_id") @db.Uuid
+  annexureSection     String              @map("annexure_section")
+  annexureItem        String              @map("annexure_item")
+  annexureItemIndex   Int?                @map("annexure_item_index")
+  originalFilename    String              @map("original_filename")
+  storagePath         String              @map("storage_path")
+  mimeType            String              @map("mime_type")
+  sizeBytes           Int                 @map("size_bytes")
+  uploadedAt          DateTime            @default(now()) @map("uploaded_at") @db.Timestamptz(6)
+  uploadedByUserId    String?             @map("uploaded_by_user_id") @db.Uuid
+  reviewed            Boolean             @default(false)
+  reviewedAt          DateTime?           @map("reviewed_at") @db.Timestamptz(6)
+  reviewerUserId      String?             @map("reviewer_user_id") @db.Uuid
+  reviewNote          String?             @map("review_note")
+
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  submission          OfftakerSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([tenantId])
+  @@index([annexureSection])
+  @@map("offtaker_attachments")
+}
+
+
+
+// ===== Recovery: missing OfftakerSubmission model for migration 0008 =====
+enum OfftakerStatus {
+  draft
+  submitted
+  screening
+  tna
+  verification
+  recommendation
+  approved
+  approved_conditional
+  declined
+  deferred
+  withdrawn
+}
+
+model OfftakerSubmission {
+  id                      String          @id @default(uuid()) @db.Uuid
+  tenantId                String          @map("tenant_id") @db.Uuid
+  legalName               String          @map("legal_name")
+  tradingName             String?         @map("trading_name")
+  registrationNumber      String?         @map("registration_number")
+  legalEntityType         String?         @map("legal_entity_type")
+  primaryContactName      String?         @map("primary_contact_name")
+  primaryContactEmail     String          @map("primary_contact_email")
+  primaryContactPhone     String?         @map("primary_contact_phone")
+  bbbeeLevel              String?         @map("bbbee_level")
+  offtakerCategory        String?         @map("offtaker_category")
+  targetDistricts         String[]        @map("target_districts")
+  productCategories       String[]        @map("product_categories")
+  preferredFarmerTypes    String[]        @map("preferred_farmer_types")
+  totalHectaresCapacity   Decimal?        @map("total_hectares_capacity") @db.Decimal
+  estimatedFarmers        Int?            @map("estimated_farmers")
+  formPayload             Json            @map("form_payload")
+  status                  OfftakerStatus  @default(submitted)
+  screeningScorecard      Json?           @map("screening_scorecard")
+  tnaSummary              String?         @map("tna_summary")
+  verificationNotes       String?         @map("verification_notes")
+  recommendation          String?
+  recommendationNotes     String?         @map("recommendation_notes")
+  conditions              String?
+  reviewerName            String?         @map("reviewer_name")
+  reviewerDate            DateTime?       @map("reviewer_date") @db.Date
+  programmeManagerName    String?         @map("programme_manager_name")
+  programmeManagerDate    DateTime?       @map("programme_manager_date") @db.Date
+  sectorHeadName          String?         @map("sector_head_name")
+  sectorHeadDate          DateTime?       @map("sector_head_date") @db.Date
+  ipmExecutiveName        String?         @map("ipm_executive_name")
+  ipmExecutiveDate        DateTime?       @map("ipm_executive_date") @db.Date
+  ceoName                 String?         @map("ceo_name")
+  ceoDate                 DateTime?       @map("ceo_date") @db.Date
+  submissionRef           String?         @map("submission_ref")
+  submittedAt             DateTime        @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  decidedAt               DateTime?       @map("decided_at") @db.Timestamptz(6)
+  createdByUserId         String?         @map("created_by_user_id") @db.Uuid
+  createdAt               DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  attachments             OfftakerAttachment[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, offtakerCategory])
+  @@index([tenantId, bbbeeLevel])
+  @@map("offtaker_submissions")
+}
+
+
+// ===== Unified Billing + Master Calendar (0010-0011) =====
+// =====================================================================
+// PRISMA MODEL SNIPPETS — paste into prisma/schema.prisma
+// After pasting:  npx prisma generate --schema=prisma/schema.prisma
+// =====================================================================
+// Source: supabase/migrations/0010_billing.sql + 0011_calendar.sql
+//
+// NAMING NOTE
+//   The existing schema already has `model Invoice` (Stripe SaaS billing)
+//   mapped to the `invoices` table. To avoid a collision, the new
+//   transactional AR (accounts-receivable) models below are prefixed
+//   with `Ar`:  ArInvoice, ArInvoiceLine, ArPayment.
+//   Customer + CalendarEvent stay unprefixed (no collisions).
+//
+//   Relation field names on Customer / CalendarEvent are kept as
+//   `invoices` / `payments` / `invoice` so existing API + UI code that
+//   does `c.invoices` or `include: { invoice: true }` keeps working.
+// =====================================================================
+
+// ---------- ENUMS ----------
+enum CustomerType {
+  external
+  internal_unit
+
+  @@map("customer_type")
+}
+
+enum CustomerStatus {
+  active
+  pipeline
+  paused
+  churned
+
+  @@map("customer_status")
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  viewed
+  partial
+  paid
+  overdue
+  void
+
+  @@map("invoice_status")
+}
+
+enum PaymentMethod {
+  bank_transfer
+  cash
+  mobile
+  card
+  cheque
+  intercompany_netting
+  other
+
+  @@map("payment_method")
+}
+
+enum EventType {
+  deliverable
+  deadline
+  meeting
+  milestone
+  training
+  campaign_launch
+  content_publish
+  recurring
+  other
+
+  @@map("event_type")
+}
+
+enum EventStatus {
+  planned
+  in_progress
+  completed
+  cancelled
+  overdue
+
+  @@map("event_status")
+}
+
+// ---------- CUSTOMERS (table: customers) ----------
+model Customer {
+  id                String          @id @default(uuid()) @db.Uuid
+  tenantId          String          @map("tenant_id") @db.Uuid
+  customerType      CustomerType    @default(external) @map("customer_type")
+  internalUnitSlug  String?         @map("internal_unit_slug")
+  displayName       String          @map("display_name")
+  companyName       String?         @map("company_name")
+  givenName         String?         @map("given_name")
+  familyName        String?         @map("family_name")
+  title             String?
+  primaryEmail      String          @map("primary_email")
+  primaryPhone      String?         @map("primary_phone")
+  mobile            String?
+  website           String?
+  billLine1         String?         @map("bill_line1")
+  billLine2         String?         @map("bill_line2")
+  billCity          String?         @map("bill_city")
+  billProvince      String?         @map("bill_province")
+  billPostal        String?         @map("bill_postal")
+  billCountry       String?         @default("South Africa") @map("bill_country")
+  shipLine1         String?         @map("ship_line1")
+  shipLine2         String?         @map("ship_line2")
+  shipCity          String?         @map("ship_city")
+  shipProvince      String?         @map("ship_province")
+  shipPostal        String?         @map("ship_postal")
+  shipCountry       String?         @map("ship_country")
+  taxable           Boolean         @default(true)
+  vatNumber         String?         @map("vat_number")
+  companyRegNumber  String?         @map("company_reg_number")
+  bbbeeLevel        String?         @map("bbbee_level")
+  currency          String          @default("ZAR")
+  paymentTerms      String          @default("Net 30") @map("payment_terms")
+  status            CustomerStatus  @default(active)
+  industry          String?
+  accountManager    String?         @map("account_manager")
+  notes             String?
+  qboCustomerId     String?         @map("qbo_customer_id")
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?         @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime        @default(now()) @map("updated_at") @db.Timestamptz
+
+  // relation field name stays `invoices` so API/UI keep working
+  invoices          ArInvoice[]
+  events            CalendarEvent[]
+
+  @@index([tenantId])
+  @@index([customerType])
+  @@index([status])
+  @@map("customers")
+}
+
+// ---------- AR INVOICES (table: ar_invoices) ----------
+model ArInvoice {
+  id                String              @id @default(uuid()) @db.Uuid
+  tenantId          String              @map("tenant_id") @db.Uuid
+  invoiceNumber     String              @map("invoice_number")
+  providerUnitSlug  String              @map("provider_unit_slug")
+  customerId        String              @map("customer_id") @db.Uuid
+  isIntercompany    Boolean             @default(false) @map("is_intercompany")
+  issueDate         DateTime            @default(now()) @map("issue_date") @db.Date
+  dueDate           DateTime            @map("due_date") @db.Date
+  currency          String              @default("ZAR")
+  subtotalZar       Decimal             @default(0) @map("subtotal_zar") @db.Decimal(14, 2)
+  vatAmountZar      Decimal             @default(0) @map("vat_amount_zar") @db.Decimal(14, 2)
+  totalZar          Decimal             @default(0) @map("total_zar") @db.Decimal(14, 2)
+  amountPaidZar     Decimal             @default(0) @map("amount_paid_zar") @db.Decimal(14, 2)
+  balanceDueZar     Decimal?            @map("balance_due_zar") @db.Decimal(14, 2)
+  status            InvoiceStatus       @default(draft)
+  sentAt            DateTime?           @map("sent_at") @db.Timestamptz
+  viewedAt          DateTime?           @map("viewed_at") @db.Timestamptz
+  paidAt            DateTime?           @map("paid_at") @db.Timestamptz
+  notes             String?
+  internalNotes     String?             @map("internal_notes")
+  engagementId      String?             @map("engagement_id") @db.Uuid
+  qboInvoiceId      String?             @map("qbo_invoice_id")
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?             @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime            @default(now()) @map("updated_at") @db.Timestamptz
+
+  customer          Customer            @relation(fields: [customerId], references: [id])
+  // relation field names stay `lineItems` / `payments`
+  lineItems         ArInvoiceLine[]
+  payments          ArPayment[]
+  events            CalendarEvent[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([providerUnitSlug])
+  @@index([status])
+  @@map("ar_invoices")
+}
+
+// ---------- AR INVOICE LINES (table: ar_invoice_lines) ----------
+model ArInvoiceLine {
+  id            String    @id @default(uuid()) @db.Uuid
+  invoiceId     String    @map("invoice_id") @db.Uuid
+  serviceCode   String?   @map("service_code")
+  description   String
+  quantity      Decimal   @default(1) @db.Decimal(10, 2)
+  unit          String?
+  unitPriceZar  Decimal   @map("unit_price_zar") @db.Decimal(12, 2)
+  lineTotalZar  Decimal?  @map("line_total_zar") @db.Decimal(14, 2)
+  vatRatePct    Decimal   @default(15.0) @map("vat_rate_pct") @db.Decimal(5, 2)
+  sortOrder     Int       @default(0) @map("sort_order")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  invoice       ArInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("ar_invoice_lines")
+}
+
+// ---------- AR PAYMENTS (table: ar_payments) ----------
+model ArPayment {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @map("tenant_id") @db.Uuid
+  invoiceId       String        @map("invoice_id") @db.Uuid
+  paymentDate     DateTime      @default(now()) @map("payment_date") @db.Date
+  amountZar       Decimal       @map("amount_zar") @db.Decimal(14, 2)
+  method          PaymentMethod @default(bank_transfer)
+  reference       String?
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId String?       @map("created_by_user_id") @db.Uuid
+
+  invoice         ArInvoice     @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("ar_payments")
+}
+
+// ---------- CALENDAR EVENTS (table: calendar_events) ----------
+model CalendarEvent {
+  id                String       @id @default(uuid()) @db.Uuid
+  tenantId          String       @map("tenant_id") @db.Uuid
+  title             String
+  type              EventType    @default(other)
+  status            EventStatus  @default(planned)
+  providerUnitSlug  String?      @map("provider_unit_slug")
+  customerId        String?      @map("customer_id") @db.Uuid
+  engagementId      String?      @map("engagement_id") @db.Uuid
+  invoiceId         String?      @map("invoice_id") @db.Uuid
+  startAt           DateTime     @map("start_at") @db.Timestamptz
+  endAt             DateTime?    @map("end_at") @db.Timestamptz
+  allDay            Boolean      @default(false) @map("all_day")
+  timezone          String       @default("Africa/Johannesburg")
+  isRecurring       Boolean      @default(false) @map("is_recurring")
+  recurringRule     String?      @map("recurring_rule")
+  recurringUntil    DateTime?    @map("recurring_until") @db.Timestamptz
+  ownerUserId       String?      @map("owner_user_id") @db.Uuid
+  assigneeEmails    String[]     @map("assignee_emails")
+  description       String?
+  location          String?
+  url               String?
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?      @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime     @default(now()) @map("updated_at") @db.Timestamptz
+
+  customer          Customer?    @relation(fields: [customerId], references: [id])
+  invoice           ArInvoice?   @relation(fields: [invoiceId], references: [id])
+
+  @@index([tenantId])
+  @@index([startAt])
+  @@index([providerUnitSlug])
+  @@index([type])
+  @@index([status])
+  @@map("calendar_events")
+}
+
+

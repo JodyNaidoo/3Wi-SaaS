@@ -1,0 +1,77 @@
+// =============================================================================
+// 0007 POE SUBMISSIONS — paste into prisma/schema.prisma
+// =============================================================================
+// 1. Add the enum + model below at the end of the file.
+// 2. Add ONE relation line into the existing Tenant model:
+//      poeSubmissions   PoeSubmission[]
+// 3. Run: npm run prisma:generate (from apps/api)
+// =============================================================================
+
+enum PoeStatus {
+  draft
+  submitted
+  under_verification
+  competent
+  not_yet_competent
+  re_assess
+  deferred
+  cancelled
+
+  @@map("poe_status")
+}
+
+model PoeSubmission {
+  id                    String     @id @default(uuid()) @db.Uuid
+  tenantId              String     @map("tenant_id") @db.Uuid
+  tenant                Tenant     @relation(fields: [tenantId], references: [id])
+
+  growerId              String?    @map("grower_id") @db.Uuid
+  candidateName         String     @map("candidate_name")
+  candidateIdNumber     String?    @map("candidate_id_number")
+  cohort                String
+  district              String?
+  farmName              String?    @map("farm_name")
+  candidatePhone        String?    @map("candidate_phone")
+  candidateEmail        String?    @map("candidate_email")
+  learnerReference      String?    @map("learner_reference")
+
+  moduleId              String     @map("module_id")
+  moduleTitle           String     @map("module_title")
+  moduleUsId            String?    @map("module_us_id")
+  moduleNqfLevel        Int?       @map("module_nqf_level")
+  moduleCredits         Int?       @map("module_credits")
+
+  evidencePayload       Json       @map("evidence_payload")
+
+  status                PoeStatus  @default(submitted)
+  totalScore            Decimal?   @map("total_score") @db.Decimal(5, 2)
+  decision              String?
+  assessorFeedback      String?    @map("assessor_feedback")
+  requiredActions       String?    @map("required_actions")
+
+  coordinatorName       String?    @map("coordinator_name")
+  coordinatorRole       String?    @map("coordinator_role")
+  coordinatorDate       DateTime?  @map("coordinator_date") @db.Date
+  assessorName          String?    @map("assessor_name")
+  assessorReg           String?    @map("assessor_reg")
+  assessorDate          DateTime?  @map("assessor_date") @db.Date
+  internalModeratorName String?    @map("internal_moderator_name")
+  internalModeratorDate DateTime?  @map("internal_moderator_date") @db.Date
+  externalModeratorName String?    @map("external_moderator_name")
+  externalModeratorDate DateTime?  @map("external_moderator_date") @db.Date
+
+  poeRef                String?    @map("poe_ref")
+  submittedAt           DateTime   @default(now()) @map("submitted_at")
+  verifiedAt            DateTime?  @map("verified_at")
+  decidedAt             DateTime?  @map("decided_at")
+  createdByUserId       String?    @map("created_by_user_id") @db.Uuid
+  createdAt             DateTime   @default(now()) @map("created_at")
+  updatedAt             DateTime   @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@index([tenantId, moduleId])
+  @@index([tenantId, cohort])
+  @@index([tenantId, candidateName])
+  @@index([submittedAt(sort: Desc)])
+  @@map("poe_submissions")
+}

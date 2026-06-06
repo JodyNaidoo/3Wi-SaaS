@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio of Evidence — Submission Form · ECRDA Hemp Training Programme</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white !important; }
+    section { break-inside: avoid; }
+  }
+  input:focus, textarea:focus, select:focus { outline: 2px solid #15803d; outline-offset: 1px; }
+  .pill { display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.6rem; border:1px solid #cbd5e1; border-radius:0.5rem; cursor:pointer; background:white; font-size:0.8125rem; }
+  .pill:has(input:checked) { background:#dcfce7; border-color:#15803d; color:#14532d; font-weight:600; }
+  .pill input { accent-color:#15803d; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-[#1F4D2C] via-[#15803d] to-[#14532d] text-white">
+  <div class="max-w-5xl mx-auto px-6 py-6">
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-widest text-emerald-200 mb-1">
+          ECRDA Hemp Training Programme · Step 3 · Pillar (a) Training
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold">Portfolio of Evidence — Submission Form</h1>
+        <p class="text-sm text-emerald-100 mt-1 max-w-3xl">
+          Coordinators use this form to gather and verify a learner's evidence for one SAQA-aligned training module.
+          The form structure changes based on which module you select.
+        </p>
+      </div>
+      <div class="text-right text-xs text-emerald-100 shrink-0">
+        <div class="font-semibold">PoE reference</div>
+        <div class="font-mono mt-1 text-base text-white" id="poeRef">ECRDA / POE / —— / 2026</div>
+        <div class="mt-1 italic">Assigned on submission</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- STATUS BAR -->
+<div class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
+  <div class="max-w-5xl mx-auto px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="flex items-center gap-3">
+      <span class="text-slate-500">Completion</span>
+      <div class="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div id="progressBar" class="h-full bg-gradient-to-r from-emerald-500 to-green-700 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <span id="progressLabel" class="font-mono text-slate-600">0%</span>
+      <span id="scorePill" class="ml-3 px-2 py-0.5 rounded-full font-mono font-semibold bg-slate-100 text-slate-700">Assessor score: 0 / 100</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="autosaveStatus" class="text-slate-500 italic">Draft auto-saves to this device</span>
+      <button type="button" onclick="restoreDraft()" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Restore draft</button>
+      <button type="button" onclick="clearDraft()" class="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium">Clear draft</button>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-5xl mx-auto px-6 py-6">
+  <form id="poeForm" class="space-y-5">
+    <!-- All sections rendered by JS -->
+  </form>
+</main>
+
+<footer class="text-center text-xs text-slate-400 py-6 px-4">
+  ECRDA Hemp Training Programme · Portfolio of Evidence Submission Form v1.0 · May 2026<br/>
+  Confidential — For ECRDA training assessment use only<br/>
+  All data captured under POPIA and used solely for assessment + certification purposes
+</footer>
+
+<!-- ============================================================
+     SAQA MODULE DATA (mirrors apps/web/.../TrainingSaqa.tsx)
+     ============================================================ -->
+<script>
+const SAQA_MODULES = [
+  {
+    id: 'pre-planting',
+    number: 'i',
+    title: 'Pre-planting',
+    usTitle: 'Establish Hemp Crop Production',
+    usId: 'USNEW-HEMP-001',
+    nqfLevel: 3,
+    credits: 8,
+    poeRequirements: [
+      { type: 'Written assessment', evidence: 'Soil analysis interpretation exercise (case study)',                   weight: 15 },
+      { type: 'Practical demo',     evidence: 'Land prep + plot layout observation (assessor on-site)',              weight: 25 },
+      { type: 'Workplace evidence', evidence: 'Photo log: before / during / after planting + GPS-referenced plot map',weight: 25 },
+      { type: 'Witness statement',  evidence: 'Field officer or extension agent confirms transplant + irrigation',    weight: 15 },
+      { type: 'Knowledge questions',evidence: '20 short-answer questions covering cultivar + soil + irrigation',     weight: 20 },
+    ],
+  },
+  {
+    id: 'in-season',
+    number: 'ii',
+    title: 'In-season operations',
+    usTitle: 'Manage In-Season Hemp Crop Operations',
+    usId: 'USNEW-HEMP-002',
+    nqfLevel: 3,
+    credits: 10,
+    poeRequirements: [
+      { type: 'Workplace evidence', evidence: 'Scouting log + fertiliser application records covering 8+ weeks',     weight: 30 },
+      { type: 'Practical demo',     evidence: 'On-farm pest ID + irrigation decision (assessor walk-through)',        weight: 25 },
+      { type: 'Photo evidence',     evidence: 'Weekly per-plot photos with BBCH stage labels',                         weight: 20 },
+      { type: 'Witness statement',  evidence: 'Field officer confirms scouting frequency + interventions',             weight: 10 },
+      { type: 'Written assessment', evidence: 'IPM decision case study + nutrient deficiency identification',          weight: 15 },
+    ],
+  },
+  {
+    id: 'post-harvest',
+    number: 'iii',
+    title: 'Post-harvest activities',
+    usTitle: 'Conduct Hemp Harvest and Post-Harvest Operations',
+    usId: 'USNEW-HEMP-003',
+    nqfLevel: 4,
+    credits: 12,
+    poeRequirements: [
+      { type: 'Practical demo',     evidence: 'Harvest readiness assessment + grading exercise (assessor present)', weight: 25 },
+      { type: 'Workplace evidence', evidence: 'Harvest + drying log + grading sheet for at least one batch',         weight: 25 },
+      { type: 'Photo evidence',     evidence: 'Before / during / after photos: harvest, drying, storage',             weight: 20 },
+      { type: 'Witness statement',  evidence: 'Hub QC technician confirms moisture + grading sign-off',                weight: 15 },
+      { type: 'Written assessment', evidence: 'Grading decision case study + storage condition design',                weight: 15 },
+    ],
+  },
+  {
+    id: 'gacp-gap',
+    number: 'iv',
+    title: 'GACP / GAP compliance',
+    usTitle: 'Apply Good Agricultural and Collection Practices in Hemp Production',
+    usId: 'USNEW-HEMP-004',
+    nqfLevel: 4,
+    credits: 8,
+    poeRequirements: [
+      { type: 'Workplace evidence', evidence: 'Complete records file: soil, seed, inputs, ops, harvest, dispatch', weight: 35 },
+      { type: 'Practical demo',     evidence: 'Mock audit walk-through with external assessor',                     weight: 25 },
+      { type: 'Written assessment', evidence: 'GACP knowledge test + corrective-action plan exercise',              weight: 20 },
+      { type: 'Witness statement',  evidence: 'Hub compliance officer confirms record currency + audit readiness',   weight: 10 },
+      { type: 'Photo evidence',     evidence: 'Batch labels, pesticide store, records file',                         weight: 10 },
+    ],
+  },
+  {
+    id: 'financial',
+    number: 'v',
+    title: 'Financial aspects of primary production',
+    usTitle: 'Apply Basic Financial Management Principles to Primary Agricultural Production',
+    usId: 'USNEW-HEMP-005',
+    nqfLevel: 4,
+    credits: 10,
+    poeRequirements: [
+      { type: 'Practical exercise', evidence: '12-month cash-flow spreadsheet for own farm (assessor reviews)',   weight: 30 },
+      { type: 'Workplace evidence', evidence: 'Bank statements + SARS confirmation + receipts file (last 3 mo)',  weight: 25 },
+      { type: 'Written assessment', evidence: 'Contract interpretation exercise + cost-of-production calc',       weight: 25 },
+      { type: 'Witness statement',  evidence: 'Mentor or accountant confirms cash-flow + record discipline',       weight: 10 },
+      { type: 'Reflective journal', evidence: 'Reinvestment plan with rationale + 6-month review',                  weight: 10 },
+    ],
+  },
+];
+</script>
+
+<!-- ============================================================
+     RENDERER + WIRING
+     ============================================================ -->
+<script>
+const el = (tag, props={}, children=[]) => {
+  const e = document.createElement(tag);
+  Object.entries(props).forEach(([k,v]) => {
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v === true) e.setAttribute(k,'');
+    else if (v !== false && v !== null && v !== undefined) e.setAttribute(k,v);
+  });
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c == null) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+};
+
+const form = document.getElementById('poeForm');
+
+/* ─────────────── Section helpers ─────────────── */
+function sectionCard(title, body, accentBg = 'bg-white', extraRight = null) {
+  return el('section', { class: `${accentBg} border border-slate-200 rounded-xl shadow-sm` }, [
+    el('header', { class: 'px-5 py-3 border-b border-slate-100 flex items-center justify-between' }, [
+      el('h2', { class: 'text-base font-bold text-slate-900' }, [title]),
+      extraRight,
+    ].filter(Boolean)),
+    el('div', { class: 'p-5 space-y-3' }, [body]),
+  ]);
+}
+
+function field(id, label, opts={}) {
+  return el('div', {}, [
+    el('label', { for: 'f-' + id, class: 'block text-xs font-semibold text-slate-700 mb-1' }, [
+      label, opts.required ? el('span', { class: 'text-rose-600' }, [' *']) : null
+    ]),
+    el('input', {
+      id: 'f-' + id, name: id,
+      type: opts.type || 'text',
+      placeholder: opts.placeholder || '',
+      class: 'w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm',
+      ...(opts.required ? { required: true } : {}),
+      ...(opts.value ? { value: opts.value } : {}),
+      ...(opts.min !== undefined ? { min: opts.min } : {}),
+      ...(opts.max !== undefined ? { max: opts.max } : {}),
+    }),
+  ]);
+}
+
+function textarea(id, label, opts={}) {
+  return el('div', {}, [
+    el('label', { for: 't-' + id, class: 'block text-xs font-semibold text-slate-700 mb-1' }, [
+      label, opts.required ? el('span', { class: 'text-rose-600' }, [' *']) : null
+    ]),
+    el('textarea', {
+      id: 't-' + id, name: id,
+      rows: opts.rows || 2,
+      placeholder: opts.placeholder || '',
+      class: 'w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm',
+      ...(opts.required ? { required: true } : {}),
+    }),
+  ]);
+}
+
+function radioGroup(id, label, options, opts={}) {
+  return el('div', {}, [
+    el('div', { class: 'text-xs font-semibold text-slate-700 mb-1' }, [
+      label, opts.required ? el('span', { class: 'text-rose-600' }, [' *']) : null
+    ]),
+    el('div', { class: 'flex flex-wrap gap-2' }, options.map(o =>
+      el('label', { class: 'pill' }, [
+        el('input', { type: 'radio', name: id, value: o, ...(opts.required ? { required: true } : {}) }),
+        el('span', {}, [o]),
+      ])
+    )),
+  ]);
+}
+
+function row(...children) {
+  const cols = children.length;
+  const cls = cols === 2 ? 'md:grid-cols-2' : cols === 3 ? 'md:grid-cols-3' : 'md:grid-cols-4';
+  return el('div', { class: `grid grid-cols-1 ${cls} gap-3` }, children);
+}
+
+/* ─────────────── Section 1: Candidate identity ─────────────── */
+const s1 = sectionCard('1 · Candidate identity (the learner being assessed)', el('div', { class: 'space-y-3' }, [
+  row(
+    field('candidate.fullName', 'Full name', { required: true }),
+    field('candidate.idNumber', 'ID number', { required: true }),
+  ),
+  row(
+    field('candidate.cohort', 'Cohort', { placeholder: 'e.g. Amathole-2026A', required: true }),
+    field('candidate.district', 'District', { placeholder: 'e.g. Amathole' }),
+  ),
+  row(
+    field('candidate.farm', 'Farm name', { placeholder: 'optional' }),
+    field('candidate.phone', 'Phone', { type: 'tel' }),
+    field('candidate.email', 'Email', { type: 'email' }),
+  ),
+  field('candidate.programmeNumber', 'ECRDA learner reference (if assigned)', { placeholder: 'e.g. ECRDA/HEMP/0042/2026' }),
+]));
+form.appendChild(s1);
+
+/* ─────────────── Section 2: Module being assessed ─────────────── */
+const moduleSelect = el('select', {
+  id: 'moduleSelect', name: 'module.id',
+  class: 'w-full border-2 border-emerald-300 rounded-md px-3 py-2 text-sm font-semibold',
+  onchange: () => renderModuleSection(),
+}, [
+  el('option', { value: '' }, ['— Select a SAQA module —']),
+  ...SAQA_MODULES.map(m => el('option', { value: m.id }, [`${m.number}. ${m.title} (NQF ${m.nqfLevel} · ${m.credits} credits)`])),
+]);
+const moduleInfo = el('div', { id: 'moduleInfo', class: 'mt-3' });
+const s2 = sectionCard('2 · Module being assessed', el('div', {}, [
+  el('p', { class: 'text-xs text-slate-500 italic mb-3' }, ['Select the SAQA-aligned training module the learner is submitting evidence for. The evidence sections below will update automatically.']),
+  moduleSelect,
+  moduleInfo,
+]));
+form.appendChild(s2);
+
+/* ─────────────── Section 3: Evidence collection (dynamic) ─────────────── */
+const evidenceWrap = el('div', { id: 'evidenceWrap', class: 'space-y-4' });
+form.appendChild(evidenceWrap);
+
+/* ─────────────── Section 4: Coordinator declaration ─────────────── */
+const s4 = sectionCard('4 · Coordinator declaration', el('div', { class: 'space-y-3' }, [
+  el('p', { class: 'text-sm text-slate-700' }, ['As the coordinating officer, I declare that the evidence submitted has been collected from the named candidate and the descriptions above reflect the actual evidence available.']),
+  row(
+    field('coord.name', 'Coordinator name', { required: true }),
+    field('coord.role', 'Role / position', { placeholder: 'e.g. Field Coordinator', required: true }),
+    field('coord.date', 'Date submitted', { type: 'date', required: true }),
+  ),
+  el('label', { class: 'flex items-start gap-2 cursor-pointer' }, [
+    el('input', { type: 'checkbox', name: 'coord.declaration', value: 'agree', required: true, class: 'mt-0.5 accent-[#15803d]' }),
+    el('span', { class: 'text-sm' }, ['I confirm the above ', el('span', { class: 'text-rose-600' }, [' *'])]),
+  ]),
+]));
+form.appendChild(s4);
+
+/* ─────────────── Section 5: Assessor outcome ─────────────── */
+const s5 = sectionCard('5 · Assessor outcome + sign-off chain', el('div', { class: 'space-y-3' }, [
+  el('p', { class: 'text-xs text-slate-500 italic' }, ['Completed by the qualified assessor after reviewing the evidence in Section 3.']),
+  el('div', { class: 'rounded-lg bg-slate-50 border border-slate-200 p-3' }, [
+    el('div', { class: 'text-xs font-semibold uppercase text-slate-500 mb-1' }, ['Total assessor score (auto-summed from evidence sections)']),
+    el('div', { class: 'text-2xl font-bold text-emerald-700', id: 'totalScoreDisplay' }, ['0 / 100']),
+    el('div', { class: 'text-xs text-slate-500 mt-1', id: 'scoreInterpretation' }, ['Awaiting assessor scores']),
+  ]),
+  radioGroup('outcome.decision', 'Competence decision', ['Competent', 'Not Yet Competent', 'Re-assess', 'Deferred'], { required: true }),
+  textarea('outcome.feedback', 'Assessor feedback to candidate', { rows: 3, placeholder: 'Key strengths + areas for further development' }),
+  textarea('outcome.actions', 'Required actions before re-submission (if NYC / Re-assess)', { rows: 2 }),
+  el('hr', { class: 'border-slate-200' }),
+  el('h3', { class: 'text-sm font-bold text-slate-700' }, ['Sign-off chain']),
+  row(
+    field('signoff.assessor.name', 'Assessor name', { required: true }),
+    field('signoff.assessor.reg', 'Assessor registration #', { placeholder: 'ETDP SETA / QCTO #' }),
+    field('signoff.assessor.date', 'Date', { type: 'date' }),
+  ),
+  row(
+    field('signoff.internal.name', 'Internal moderator', { placeholder: 'Hempire-EC / IBS Consulting' }),
+    field('signoff.internal.date', 'Date', { type: 'date' }),
+  ),
+  row(
+    field('signoff.external.name', 'External moderator (ETQA / SETA)', { placeholder: 'e.g. AgriSETA-appointed' }),
+    field('signoff.external.date', 'Date', { type: 'date' }),
+  ),
+]));
+form.appendChild(s5);
+
+/* ─────────────── Submit panel ─────────────── */
+const submitPanel = el('section', { class: 'bg-gradient-to-br from-[#1F4D2C] to-[#14532d] text-white rounded-xl shadow-lg p-6' }, [
+  el('h2', { class: 'text-lg font-bold mb-2' }, ['Submit this PoE']),
+  el('p', { class: 'text-sm text-emerald-100 mb-4' }, [
+    'Submit directly to the SaaS (lands in the Training Dashboard immediately) or print to PDF for offline submission.'
+  ]),
+  el('div', { class: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4' }, [
+    el('button', { type: 'button', onclick: submitToSaaS, id: 'submitToSaasBtn', class: 'bg-white text-[#14532d] hover:bg-emerald-50 font-semibold py-3 px-4 rounded-lg' }, ['🚀  Submit to SaaS']),
+    el('button', { type: 'button', onclick: () => window.print(), class: 'bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-lg' }, ['🖨  Print to PDF']),
+  ]),
+  el('div', { id: 'submitFeedback', class: 'mb-3 hidden' }),
+  el('div', { class: 'bg-white/10 rounded-lg p-3 text-xs text-emerald-100', html:
+    '<strong class="text-white">📤 SaaS submission:</strong> POSTs the PoE to <span class="font-mono text-white">/poe-submissions/start</span>. Requires the coordinator to be signed in to the SaaS in the same browser. ' +
+    '<br><strong class="text-white">📧 Email fallback:</strong> If you’re offline or unauthenticated, print to PDF and email to <span class="font-mono text-white">training@hempire-ec.co.za</span> (placeholder).' }),
+]);
+form.appendChild(submitPanel);
+
+/* ============================================================
+   DYNAMIC MODULE / EVIDENCE RENDERING
+   ============================================================ */
+function renderModuleSection() {
+  const moduleId = document.getElementById('moduleSelect').value;
+  moduleInfo.innerHTML = '';
+  evidenceWrap.innerHTML = '';
+
+  if (!moduleId) {
+    moduleInfo.appendChild(el('div', { class: 'p-3 rounded bg-amber-50 border border-amber-200 text-xs text-amber-800 italic' }, [
+      'Select a module to load its specific evidence requirements.'
+    ]));
+    return;
+  }
+
+  const m = SAQA_MODULES.find(x => x.id === moduleId);
+  moduleInfo.appendChild(el('div', { class: 'mt-3 rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4' }, [
+    el('div', { class: 'flex items-start gap-3' }, [
+      el('span', { class: 'inline-flex items-center justify-center w-10 h-10 rounded-md text-white text-sm font-bold uppercase shrink-0', style: 'background:#15803d' }, [m.number]),
+      el('div', { class: 'flex-1' }, [
+        el('h3', { class: 'text-base font-bold text-slate-900' }, [m.title]),
+        el('p', { class: 'text-xs text-slate-600 font-mono mt-0.5' }, [m.usTitle]),
+        el('div', { class: 'flex flex-wrap items-center gap-2 mt-2 text-xs' }, [
+          el('span', { class: 'px-2 py-0.5 rounded-md text-white font-bold', style: 'background:#15803d' }, ['NQF ' + m.nqfLevel]),
+          el('span', { class: 'px-2 py-0.5 rounded-md font-bold border border-emerald-700 text-emerald-800' }, [m.credits + ' credits']),
+          el('span', { class: 'font-mono text-slate-500' }, [m.usId]),
+          el('span', { class: 'text-slate-500' }, ['· ' + m.poeRequirements.length + ' evidence types · weights add to 100%']),
+        ]),
+      ]),
+    ]),
+  ]));
+
+  // Render evidence sections (one per PoE requirement)
+  const evidenceHeader = el('h2', { class: 'text-base font-bold text-slate-900 mt-2' }, ['3 · Evidence collection']);
+  const evidenceIntro = el('p', { class: 'text-xs text-slate-500 italic mb-3' }, [
+    'For each evidence type below, describe what has been collected, attach the file or paste a link, and have the assessor verify + score.'
+  ]);
+  evidenceWrap.appendChild(evidenceHeader);
+  evidenceWrap.appendChild(evidenceIntro);
+
+  m.poeRequirements.forEach((p, idx) => {
+    const evid = `evidence.${idx}`;
+    const card = el('section', { class: 'bg-white border-2 border-slate-200 rounded-xl shadow-sm' }, [
+      el('header', { class: 'px-5 py-3 border-b border-slate-100 flex items-center justify-between gap-3' }, [
+        el('div', {}, [
+          el('div', { class: 'flex items-center gap-2 mb-0.5' }, [
+            el('span', { class: 'inline-flex items-center justify-center w-7 h-7 rounded-md text-white text-xs font-bold', style: 'background:#15803d' }, [String(idx + 1)]),
+            el('h3', { class: 'text-sm font-bold text-slate-900' }, [p.type]),
+            el('span', { class: 'text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-emerald-100 text-emerald-800' }, [`Weight ${p.weight}%`]),
+          ]),
+          el('p', { class: 'text-xs text-slate-600 ml-9' }, [p.evidence]),
+        ]),
+      ]),
+      el('div', { class: 'p-5 space-y-3' }, [
+        // Hidden fields for evidence metadata so JSON snapshot includes them
+        el('input', { type: 'hidden', name: `${evid}.type`,    value: p.type }),
+        el('input', { type: 'hidden', name: `${evid}.weight`,  value: String(p.weight) }),
+        el('input', { type: 'hidden', name: `${evid}.requirement`, value: p.evidence }),
+        textarea(`${evid}.description`, 'Description of evidence collected', { rows: 2, placeholder: 'Describe what evidence is being submitted for this requirement', required: true }),
+        row(
+          field(`${evid}.dateCollected`, 'Date of evidence', { type: 'date' }),
+          field(`${evid}.fileRef`, 'File / folder reference', { placeholder: 'e.g. SharePoint link, batch number, photo album' }),
+        ),
+        textarea(`${evid}.coordNotes`, 'Coordinator notes', { rows: 2, placeholder: 'Context, source, any caveats' }),
+        el('hr', { class: 'border-slate-100' }),
+        // Assessor section per evidence row
+        el('div', { class: 'rounded-lg bg-slate-50 border border-slate-200 p-3 space-y-2' }, [
+          el('div', { class: 'text-xs font-bold uppercase text-emerald-800' }, ['Assessor verification']),
+          row(
+            radioGroup(`${evid}.assessor.verified`, 'Verified?', ['Yes', 'No', 'Conditional']),
+            field(`${evid}.assessor.score`, `Score awarded (max ${p.weight})`, { type: 'number', min: 0, max: p.weight, value: '0' }),
+          ),
+          textarea(`${evid}.assessor.comments`, 'Assessor comments', { rows: 2 }),
+        ]),
+      ]),
+    ]);
+    evidenceWrap.appendChild(card);
+  });
+
+  updateProgress();
+  updateScore();
+}
+
+/* ============================================================
+   AUTOSAVE / RESTORE / SCORE / PROGRESS
+   ============================================================ */
+const STORAGE_KEY = 'ecrda_poe_form_v1';
+
+function snapshot() {
+  const data = {};
+  form.querySelectorAll('input, textarea, select').forEach(el => {
+    if (!el.name) return;
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      if (el.checked) {
+        if (el.type === 'checkbox') {
+          if (!data[el.name]) data[el.name] = [];
+          data[el.name].push(el.value);
+        } else {
+          data[el.name] = el.value;
+        }
+      }
+    } else if (el.value !== '' && el.value !== null) {
+      data[el.name] = el.value;
+    }
+  });
+  return data;
+}
+
+function saveDraft() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), data: snapshot() }));
+    document.getElementById('autosaveStatus').textContent = 'Draft saved · ' + new Date().toLocaleTimeString();
+  } catch (e) { document.getElementById('autosaveStatus').textContent = 'Save failed'; }
+}
+
+function restoreDraft() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) { alert('No saved draft on this device.'); return; }
+  try {
+    const { data } = JSON.parse(raw);
+    // Restore module selection first so evidence rows exist
+    if (data['module.id']) {
+      document.getElementById('moduleSelect').value = data['module.id'];
+      renderModuleSection();
+    }
+    setTimeout(() => {
+      Object.entries(data).forEach(([name, val]) => {
+        const els = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
+        els.forEach(el => {
+          if (el.type === 'checkbox' || el.type === 'radio') {
+            const values = Array.isArray(val) ? val : [val];
+            el.checked = values.includes(el.value);
+          } else {
+            el.value = val;
+          }
+        });
+      });
+      updateProgress(); updateScore();
+      document.getElementById('autosaveStatus').textContent = 'Draft restored';
+    }, 50);
+  } catch (e) { alert('Could not restore: ' + e.message); }
+}
+
+function clearDraft() {
+  if (!confirm('Clear the saved draft?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('autosaveStatus').textContent = 'Draft cleared';
+}
+
+let autosaveTimer;
+form.addEventListener('input', () => {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(saveDraft, 2000);
+  updateProgress();
+  updateScore();
+});
+form.addEventListener('change', () => { updateProgress(); updateScore(); });
+
+function updateProgress() {
+  const els = form.querySelectorAll('input, textarea, select');
+  const groups = new Set();
+  const filled = new Set();
+  els.forEach(el => {
+    if (!el.name || el.type === 'hidden') return;
+    groups.add(el.name);
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      if (el.checked) filled.add(el.name);
+    } else if ((el.value || '').trim()) {
+      filled.add(el.name);
+    }
+  });
+  const pct = groups.size ? Math.round((filled.size / groups.size) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '%';
+}
+
+function updateScore() {
+  let total = 0;
+  form.querySelectorAll('input[name$=".assessor.score"]').forEach(el => {
+    const v = parseFloat(el.value);
+    if (!isNaN(v)) total += v;
+  });
+  total = Math.round(total * 10) / 10;
+  document.getElementById('scorePill').textContent = `Assessor score: ${total} / 100`;
+  document.getElementById('totalScoreDisplay').textContent = `${total} / 100`;
+  const sd = document.getElementById('scoreInterpretation');
+  if (total >= 70) {
+    sd.textContent = 'Above competence threshold (≥ 70) — recommend Competent if all evidence verified';
+    sd.className = 'text-xs text-emerald-700 font-semibold mt-1';
+  } else if (total >= 50) {
+    sd.textContent = 'Partial competence — recommend Re-assess or Conditional Competent';
+    sd.className = 'text-xs text-amber-700 font-semibold mt-1';
+  } else if (total > 0) {
+    sd.textContent = 'Below threshold — recommend Not Yet Competent + remediation plan';
+    sd.className = 'text-xs text-rose-700 font-semibold mt-1';
+  } else {
+    sd.textContent = 'Awaiting assessor scores';
+    sd.className = 'text-xs text-slate-500 italic mt-1';
+  }
+}
+
+/* ─────────────── Submit to SaaS ─────────────── */
+const SAAS_API_BASE = 'http://localhost:4000';  // change to production URL when deployed
+
+function readAuthTokenFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('3wi.auth.v1');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed.accessToken || null;
+  } catch { return null; }
+}
+
+function totalAssessorScore() {
+  let t = 0;
+  form.querySelectorAll('input[name$=".assessor.score"]').forEach(el => {
+    const v = parseFloat(el.value);
+    if (!isNaN(v)) t += v;
+  });
+  return Math.round(t * 10) / 10;
+}
+
+function showFeedback(html, kind) {
+  const fb = document.getElementById('submitFeedback');
+  const colors = {
+    ok:    'bg-emerald-100 border-emerald-300 text-emerald-900',
+    warn:  'bg-amber-100 border-amber-300 text-amber-900',
+    err:   'bg-rose-100 border-rose-300 text-rose-900',
+    info:  'bg-cyan-100 border-cyan-300 text-cyan-900',
+  };
+  fb.className = `border rounded-lg p-3 text-xs ${colors[kind] || colors.info}`;
+  fb.innerHTML = html;
+}
+
+async function submitToSaaS() {
+  const btn = document.getElementById('submitToSaasBtn');
+  const data = snapshot();
+  const moduleId = data['module.id'];
+  if (!moduleId) {
+    showFeedback('❌ Please select a module first (Section 2).', 'err');
+    return;
+  }
+  const candidateName = data['candidate.fullName'];
+  if (!candidateName) {
+    showFeedback('❌ Please fill in the candidate full name (Section 1).', 'err');
+    return;
+  }
+
+  const token = readAuthTokenFromLocalStorage();
+  if (!token) {
+    showFeedback(
+      '⚠️ <strong>You are not signed in to the SaaS in this browser.</strong><br>' +
+      'Open the SaaS in another tab, sign in, then come back and click Submit again.<br>' +
+      'Or — print to PDF and email the submission as a fallback.',
+      'warn'
+    );
+    return;
+  }
+
+  const module = SAQA_MODULES.find(m => m.id === moduleId);
+  const payload = {
+    candidateName,
+    candidateIdNumber: data['candidate.idNumber'] || undefined,
+    cohort: data['candidate.cohort'] || 'unspecified',
+    district: data['candidate.district'] || undefined,
+    farmName: data['candidate.farm'] || undefined,
+    candidatePhone: data['candidate.phone'] || undefined,
+    candidateEmail: data['candidate.email'] || undefined,
+    learnerReference: data['candidate.programmeNumber'] || undefined,
+    moduleId,
+    moduleTitle: module?.title || moduleId,
+    moduleUsId: module?.usId || undefined,
+    moduleNqfLevel: module?.nqfLevel || undefined,
+    moduleCredits: module?.credits || undefined,
+    evidencePayload: data,
+    totalScore: totalAssessorScore(),
+    decision: data['outcome.decision'] || undefined,
+    assessorFeedback: data['outcome.feedback'] || undefined,
+    requiredActions: data['outcome.actions'] || undefined,
+    coordinatorName: data['coord.name'] || undefined,
+    coordinatorRole: data['coord.role'] || undefined,
+    coordinatorDate: data['coord.date'] || undefined,
+    poeRef: document.getElementById('poeRef').textContent.trim().replace(/\s+/g, ''),
+  };
+
+  btn.disabled = true;
+  btn.textContent = '⏳  Submitting…';
+  showFeedback('⏳ Submitting to <code>' + SAAS_API_BASE + '/poe-submissions/start</code>…', 'info');
+
+  try {
+    const r = await fetch(`${SAAS_API_BASE}/poe-submissions/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!r.ok) {
+      const text = await r.text();
+      showFeedback(`❌ API ${r.status}: ${text}`, 'err');
+      btn.disabled = false;
+      btn.textContent = '🚀  Submit to SaaS';
+      return;
+    }
+
+    const { submission, nextStep } = await r.json();
+    showFeedback(
+      `✅ <strong>Submitted!</strong> Reference: <code>${submission.poeRef || submission.id}</code><br>${nextStep || ''}`,
+      'ok'
+    );
+    btn.textContent = '✓ Submitted';
+    document.getElementById('poeRef').textContent = submission.poeRef || submission.id;
+  } catch (e) {
+    showFeedback(
+      `❌ Network error: ${e.message}<br>Print to PDF and email as fallback.`,
+      'err'
+    );
+    btn.disabled = false;
+    btn.textContent = '🚀  Submit to SaaS';
+  }
+}
+
+document.getElementById('submitFeedback').classList.remove('hidden');
+
+/* ─────────────── Init ─────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  renderModuleSection();
+  if (localStorage.getItem(STORAGE_KEY)) {
+    document.getElementById('autosaveStatus').textContent = 'Saved draft detected — click "Restore draft" to load it.';
+  }
+});
+</script>
+</body>
+</html>

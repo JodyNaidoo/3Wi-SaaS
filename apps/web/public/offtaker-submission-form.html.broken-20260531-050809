@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ECRDA Hemp Offtaker Submission Checklist — Eastern Cape Rural Development Agency</title>
+<meta name="description" content="Standardised submission form for prospective hemp offtakers wishing to join the ECRDA vetted pool." />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white !important; }
+    section { break-inside: avoid; }
+  }
+  .nav-link.active { background-color: #ecfeff; color: #0E7490; font-weight: 600; }
+  html { scroll-behavior: smooth; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid #0E7490; outline-offset: 1px; }
+  .check-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; cursor: pointer; background: white; font-size: 0.8125rem; }
+  .check-pill:has(input:checked) { background: #ecfeff; border-color: #0E7490; color: #0E7490; }
+  .check-pill input { accent-color: #0E7490; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-[#1F4D2C] to-[#0E7490] text-white">
+  <div class="max-w-6xl mx-auto px-6 py-8">
+    <div class="flex items-start justify-between gap-6">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-widest text-emerald-200 mb-1">
+          Eastern Cape Rural Development Agency
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold">Prospective Hemp Offtaker — Submission Checklist</h1>
+        <p class="text-sm text-emerald-100 mt-1 max-w-3xl">
+          A standardised information-gathering tool for prospective hemp offtakers, traders, processors,
+          and market actors seeking to operate in the Eastern Cape Province of South Africa.
+        </p>
+        <p class="text-xs text-emerald-200 mt-2 font-mono">Version 1.0 · April 2026</p>
+      </div>
+      <div class="text-xs text-emerald-100 text-right shrink-0 hidden md:block">
+        <div class="font-semibold">Submission reference</div>
+        <div class="font-mono mt-1 text-base text-white" id="submissionRef">ECRDA / HEMP / —— / 2026</div>
+        <div class="mt-1 italic">Assigned by ECRDA on receipt</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- STATUS BAR -->
+<div class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
+  <div class="max-w-6xl mx-auto px-6 py-2 flex items-center justify-between gap-4 text-xs">
+    <div class="flex items-center gap-3">
+      <span class="text-slate-500">Progress</span>
+      <div class="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div id="progressBar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <span id="progressLabel" class="font-mono text-slate-600">0%</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="autosaveStatus" class="text-slate-500 italic">Draft auto-saves to this device</span>
+      <button type="button" onclick="restoreDraft()" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Restore draft</button>
+      <button type="button" onclick="clearDraft()" class="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium">Clear draft</button>
+    </div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<section class="bg-white border-b border-slate-200">
+  <div class="max-w-6xl mx-auto px-6 py-6">
+    <div class="text-slate-700 text-sm">
+      <h2 class="text-lg font-bold text-slate-900 mb-2">Introduction and Instructions</h2>
+      <p class="mb-3">
+        The Eastern Cape Rural Development Agency (ECRDA) is establishing a <strong>vetted pool of credible
+        hemp offtakers</strong> to support farmer development and structured market access in the Eastern Cape Province.
+        This checklist gathers standardised information from companies and individuals interested in purchasing
+        hemp produce from Eastern Cape farmers and the support each offtaker will provide to ensure farmer success.
+      </p>
+      <p>
+        ECRDA intends to <strong>allocate grant funding to farmers where credible offtake arrangements are in place</strong>.
+        Your responses will enable ECRDA to compare offtakers on a like-for-like basis, assess credibility and
+        capability, and present options to farmers who may choose the offtaker they wish to work with.
+      </p>
+      <ul class="list-disc ml-5 space-y-0.5 text-xs text-slate-600 mt-3">
+        <li>Complete all applicable sections. If a section does not apply, indicate "Not Applicable" with a brief explanation.</li>
+        <li>Where precise figures are unavailable, provide well-reasoned estimates and indicate them as such.</li>
+        <li>Attach the supporting documents listed in Annexure A. Submissions without supporting evidence may be regarded as incomplete.</li>
+        <li>All information will be treated confidentially and used solely to evaluate offtaker suitability and build a farmer-facing directory.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN LAYOUT -->
+<div class="max-w-6xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
+
+  <!-- Sticky nav -->
+  <aside class="no-print lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto bg-white border border-slate-200 rounded-xl p-3 text-xs">
+    <div class="font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Sections</div>
+    <nav id="sectionNav" class="space-y-0.5">
+      <a href="#s1"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">1 · Company Details</a>
+      <a href="#s2"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">2 · Geographic Area</a>
+      <a href="#s3"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">3 · Offtake Model</a>
+      <a href="#s4"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">4 · Farmer Support</a>
+      <a href="#s5"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">5 · Commercial Terms</a>
+      <a href="#s6"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">6 · Logistics</a>
+      <a href="#s7"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">7 · Market Access</a>
+      <a href="#s8"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">8 · Compliance</a>
+      <a href="#s9"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">9 · Risks</a>
+      <a href="#s10" class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">10 · Declaration</a>
+      <a href="#sA"  class="nav-link block px-2 py-1.5 rounded text-slate-700 hover:bg-slate-100">A · Supporting Docs</a>
+      <a href="#submitPanel" class="block px-2 py-1.5 mt-2 rounded bg-[#0E7490] text-white font-semibold text-center hover:bg-[#0c6b80]">Submit</a>
+    </nav>
+  </aside>
+
+  <!-- Form -->
+  <form id="checklistForm" class="space-y-5">
+    <!-- All sections injected by JS below -->
+  </form>
+</div>
+
+<!-- ============================================================
+     FORM CONFIG + RENDERER (no regex, no string parsing)
+     ============================================================ -->
+<script>
+const formConfig = [
+  // ============================== SECTION 1 ==============================
+  { id: 's1', title: 'Section 1 · Respondent and Company Details', meta: '20 fields',
+    intro: 'Provide full legal and contact details for the entity submitting this checklist.',
+    fields: [
+      { row: [
+        { kind: 'field', id: '1.1',  label: 'Full legal name of entity', required: true },
+        { kind: 'field', id: '1.2',  label: 'Trading name (if different)' },
+      ]},
+      { row: [
+        { kind: 'field', id: '1.3',  label: 'Company registration number', required: true },
+        { kind: 'field', id: '1.4',  label: 'Date of registration', type: 'date' },
+        { kind: 'field', id: '1.5',  label: 'Country of registration', placeholder: 'South Africa' },
+      ]},
+      { kind: 'radio', id: '1.6', label: '1.6 Legal entity type', required: true,
+        options: ['Private Company','Public Company','Close Corporation','Co-operative','Trust','Sole Proprietor','Other'] },
+      { row: [
+        { kind: 'textarea', id: '1.7', label: 'Physical address', required: true, rows: 2 },
+        { kind: 'textarea', id: '1.8', label: 'Postal address (if different)', rows: 2 },
+      ]},
+      { row: [
+        { kind: 'field', id: '1.9.name',  label: 'Primary contact name', required: true },
+        { kind: 'field', id: '1.9.title', label: 'Primary contact title' },
+      ]},
+      { row: [
+        { kind: 'field', id: '1.10', label: 'Telephone number', type: 'tel', required: true },
+        { kind: 'field', id: '1.11', label: 'Email address', type: 'email', required: true },
+        { kind: 'field', id: '1.12', label: 'Website (if applicable)', type: 'url' },
+      ]},
+      { kind: 'divider' },
+      { kind: 'subheader', text: 'Ownership Structure',
+        intro: 'List all beneficial owners holding 10% or more ownership and provide a brief ownership structure description if complex.' },
+      { row: [
+        { kind: 'field', id: '1.13', label: 'Name of majority owner / CEO / MD', required: true },
+        { kind: 'field', id: '1.14', label: 'Identity / Passport number', required: true },
+        { kind: 'field', id: '1.15', label: 'Nationality' },
+      ]},
+      { kind: 'radio', id: '1.16', label: '1.16 B-BBEE status',
+        options: ['Level 1','Level 2','Level 3','Level 4','Non-compliant','Exempt','Unknown'] },
+      { row: [
+        { kind: 'field', id: '1.17', label: '% Black ownership', type: 'number', min: 0, max: 100, suffix: '%' },
+        { kind: 'field', id: '1.18', label: '% Female ownership', type: 'number', min: 0, max: 100, suffix: '%' },
+        { kind: 'field', id: '1.19', label: '% Youth ownership (under 35)', type: 'number', min: 0, max: 100, suffix: '%' },
+      ]},
+      { kind: 'radio', id: '1.20', label: '1.20 Is the entity South African-owned?',
+        options: ['Yes','No (specify foreign shareholding %)'] },
+      { kind: 'field', id: '1.20.foreign', label: 'If No — foreign shareholding %', type: 'number', min: 0, max: 100, suffix: '%' },
+      { kind: 'textarea', id: '1.21', label: 'Brief ownership structure description (if complex)', rows: 3 },
+    ]
+  },
+  // ============================== SECTION 2 ==============================
+  { id: 's2', title: 'Section 2 · Geographic Area of Interest', meta: '7 fields',
+    intro: 'Indicate the specific areas within the Eastern Cape where you intend to operate and contract with farmers.',
+    fields: [
+      { kind: 'textarea', id: '2.1', label: '2.1 Target district(s)', rows: 2, placeholder: 'e.g. Amathole, OR Tambo, Sarah Baartman' },
+      { kind: 'textarea', id: '2.2', label: '2.2 Target local municipality / municipalities', rows: 2 },
+      { kind: 'textarea', id: '2.3', label: '2.3 Named towns, wards or farming areas (if known)', rows: 2 },
+      { kind: 'radio', id: '2.4', label: '2.4 Do you have existing operations or presence in these areas?', options: ['Yes','No'] },
+      { kind: 'textarea', id: '2.5', label: '2.5 If yes, describe your existing presence', rows: 3 },
+      { kind: 'radio', id: '2.6', label: '2.6 Are you open to expanding to other areas if demand exists?',
+        options: ['Yes','No','Subject to conditions'] },
+      { kind: 'textarea', id: '2.7', label: '2.7 Conditions for expansion, if any', rows: 2 },
+      { kind: 'textarea', id: '2.geo.rationale', label: 'Brief rationale for geographic selection',
+        placeholder: 'e.g. proximity to processing facility, logistics corridors, known farmer presence, climatic suitability', rows: 3 },
+    ]
+  },
+  // ============================== SECTION 3 ==============================
+  { id: 's3', title: 'Section 3 · Offtake Model and Product Focus',
+    fields: [
+      { kind: 'subheader', text: '3.1 Offtaker Category' },
+      { kind: 'radio', id: '3.1.A', label: 'A. Which category best describes your business?', required: true,
+        options: ['Trader / Reseller','Processor / Manufacturer','Integrated Model (both)','End-user / Manufacturer of finished goods','Other'] },
+      { row: [
+        { kind: 'field', id: '3.1.B', label: 'B. Years of operation in hemp or analogous sectors', type: 'number', min: 0 },
+        { kind: 'field', id: '3.1.C', label: 'C. Years of operation in agribusiness generally', type: 'number', min: 0 },
+      ]},
+
+      { kind: 'subheader', text: '3.2 Product Categories of Interest',
+        intro: 'Tick all product categories you are willing to purchase and provide specifications for each.' },
+      { kind: 'productRow', id: '3.2.flower',      label: 'Dried flower (biomass for CBD/CBG extraction)' },
+      { kind: 'productRow', id: '3.2.premflower',  label: 'Dried flower (premium grade for direct sale)' },
+      { kind: 'productRow', id: '3.2.seed',        label: 'Seed / grain (hempseed for food or oil)' },
+      { kind: 'productRow', id: '3.2.bast',        label: 'Bast fibre (textile or industrial grade)' },
+      { kind: 'productRow', id: '3.2.hurd',        label: 'Hurd / shiv (construction, animal bedding)' },
+      { kind: 'productRow', id: '3.2.stalk',       label: 'Whole stalk (unprocessed)' },
+      { kind: 'productRow', id: '3.2.other',       label: 'Other (specify in spec field)' },
+
+      { kind: 'subheader', text: '3.3 Scale of Operation' },
+      { row: [
+        { kind: 'field', id: '3.3.1', label: '3.3.1 Total hectares you are prepared to support or contract', type: 'number', min: 0, suffix: 'ha' },
+        { kind: 'field', id: '3.3.2', label: '3.3.2 Estimated number of farmers you can work with', type: 'number', min: 0 },
+      ]},
+      { kind: 'checkbox', id: '3.3.3', label: '3.3.3 Preferred farmer type',
+        options: ['Smallholder (< 5 ha)','Emerging (5-50 ha)','Commercial (> 50 ha)','Co-operatives','Any / All'] },
+      { kind: 'radio', id: '3.3.4', label: '3.3.4 Willing to work with first-time hemp growers?',
+        options: ['Yes','Yes — with conditions','No'] },
+      { kind: 'textarea', id: '3.3.5', label: '3.3.5 Conditions for working with new growers, if any', rows: 2 },
+      { row: [
+        { kind: 'field', id: '3.3.6', label: '3.3.6 Minimum viable plot size per farmer', type: 'number', min: 0, suffix: 'ha' },
+        { kind: 'field', id: '3.3.7', label: '3.3.7 Expected first year of active offtake', type: 'number', min: 2025, max: 2035 },
+      ]},
+    ]
+  },
+  // ============================== SECTION 4 ==============================
+  { id: 's4', title: 'Section 4 · Farmer Support and Training Model',
+    metaPill: { text: 'Core for ECRDA evaluation', color: '#0E7490' },
+    intro: 'ECRDA requires offtakers to demonstrate how they will help farmers succeed, not merely what they intend to buy.',
+    fields: [
+      { kind: 'subheader', text: '4.1 Pre-Planting Support' },
+      { kind: 'supportRow', id: '4.1.cultivar',    label: 'Cultivar selection guidance' },
+      { kind: 'supportRow', id: '4.1.soil',        label: 'Soil testing and land preparation advice' },
+      { kind: 'supportRow', id: '4.1.seed',        label: 'Provision of certified seed or planting material' },
+      { kind: 'supportRow', id: '4.1.finance',     label: 'Access to financing for inputs' },
+      { kind: 'supportRow', id: '4.1.compliance',  label: 'Registration and compliance assistance (licensing, permits)' },
+      { kind: 'supportRow', id: '4.1.orientation', label: 'Farmer orientation and information sessions' },
+
+      { kind: 'subheader', text: '4.2 In-Season Technical Support' },
+      { kind: 'supportRow', id: '4.2.onfarm',     label: 'On-farm visits by agronomists or extension officers' },
+      { kind: 'supportRow', id: '4.2.hotline',    label: 'Telephone / WhatsApp / digital support hotline' },
+      { kind: 'supportRow', id: '4.2.pest',       label: 'Integrated pest and disease management guidance' },
+      { kind: 'supportRow', id: '4.2.water',      label: 'Irrigation and water management advice' },
+      { kind: 'supportRow', id: '4.2.nutrition',  label: 'Nutrition and fertiliser recommendations' },
+      { kind: 'supportRow', id: '4.2.monitoring', label: 'Growth stage monitoring and reporting' },
+
+      { kind: 'subheader', text: '4.3 Harvesting and Post-Harvest Support' },
+      { kind: 'supportRow', id: '4.3.timing',     label: 'Harvest timing and method guidance' },
+      { kind: 'supportRow', id: '4.3.curing',     label: 'Drying and curing protocols and supervision' },
+      { kind: 'supportRow', id: '4.3.process',    label: 'Decortication or primary processing support (if applicable)' },
+      { kind: 'supportRow', id: '4.3.equipment',  label: 'Supply of harvesting equipment or labour' },
+      { kind: 'supportRow', id: '4.3.grading',    label: 'Quality grading and sorting assistance' },
+      { kind: 'supportRow', id: '4.3.storage',    label: 'Post-harvest storage advice or provision' },
+
+      { kind: 'subheader', text: '4.4 Training and Capacity Building' },
+      { row: [
+        { kind: 'field', id: '4.4.1', label: '4.4.1 Number of training sessions per growing season', type: 'number', min: 0 },
+        { kind: 'field', id: '4.4.3', label: '4.4.3 Languages in which training is offered', placeholder: 'e.g. English, isiXhosa, Afrikaans' },
+      ]},
+      { kind: 'checkbox', id: '4.4.2', label: '4.4.2 Training delivery method',
+        options: ['On-farm demonstrations','Classroom / workshop','Digital / online','Mentorship / pairing','Other'] },
+      { kind: 'radio', id: '4.4.4', label: '4.4.4 Do you provide training materials (manuals, guides, videos)?', options: ['Yes','No'] },
+      { row: [
+        { kind: 'field', id: '4.4.5', label: '4.4.5 Number of technical staff available for farmer support', type: 'number', min: 0 },
+        { kind: 'textarea', id: '4.4.6', label: '4.4.6 Qualifications and experience of support staff', rows: 3 },
+      ]},
+
+      { kind: 'subheader', text: '4.5 Inputs and Technical Assistance' },
+      { kind: 'radio', id: '4.5.1', label: '4.5.1 Will you provide inputs to farmers (seed, fertiliser, chemicals)?',
+        options: ['Yes — free of charge','Yes — on credit','Yes — at cost','No','Selectively'] },
+      { kind: 'textarea', id: '4.5.2', label: '4.5.2 If inputs are provided on credit, describe repayment terms', rows: 2 },
+      { kind: 'radio', id: '4.5.3', label: '4.5.3 Production protocols or SOPs provided?', options: ['Yes','No','In development'] },
+      { kind: 'textarea', id: '4.5.4', label: '4.5.4 Quality standards farmers must meet', rows: 2 },
+    ]
+  },
+  // ============================== SECTION 5 ==============================
+  { id: 's5', title: 'Section 5 · Commercial Terms and Indicative Buying Approach',
+    fields: [
+      { kind: 'subheader', text: '5.1 Contracting Model' },
+      { kind: 'radio', id: '5.1.1', label: '5.1.1 How will you contract with farmers?',
+        options: ['Direct contracts with individual farmers','Through co-operatives or aggregators','Through an agent or intermediary','Spot market purchases (no formal contract)','Other'] },
+      { kind: 'radio', id: '5.1.2', label: '5.1.2 Contract duration preference',
+        options: ['Single season','Multi-season','Rolling / ongoing','Spot / as needed'] },
+      { kind: 'field', id: '5.1.2.years', label: 'If multi-season, how many years?', type: 'number', min: 1, max: 20 },
+      { kind: 'radio', id: '5.1.3', label: '5.1.3 Exclusivity requirement',
+        options: ['Yes — farmers may only sell to us','No — farmers may sell to others','Partial'] },
+      { kind: 'textarea', id: '5.1.4', label: '5.1.4 Specific cultivars or varieties required', rows: 2 },
+      { kind: 'textarea', id: '5.1.5', label: '5.1.5 Specific production methods required (organic, GAP, etc.)', rows: 2 },
+
+      { kind: 'subheader', text: '5.2 Indicative Pricing' },
+      { kind: 'radio', id: '5.2.1', label: '5.2.1 Pricing model',
+        options: ['Fixed price per unit','Market-linked / indexed','Formula-based','Percentage of final product value','To be negotiated per farmer'] },
+      { row: [
+        { kind: 'field', id: '5.2.2', label: 'Dried flower (per kg)', prefix: 'R', type: 'number', step: '0.01', min: 0 },
+        { kind: 'field', id: '5.2.3', label: 'Seed / grain (per tonne)', prefix: 'R', type: 'number', step: '0.01', min: 0 },
+      ]},
+      { row: [
+        { kind: 'field', id: '5.2.4', label: 'Hemp straw (per tonne)', prefix: 'R', type: 'number', step: '0.01', min: 0 },
+        { kind: 'field', id: '5.2.5', label: 'Fibre — bast (per tonne)', prefix: 'R', type: 'number', step: '0.01', min: 0 },
+        { kind: 'field', id: '5.2.6', label: 'Fibre — hurd (per tonne)', prefix: 'R', type: 'number', step: '0.01', min: 0 },
+      ]},
+      { kind: 'radio', id: '5.2.review', label: 'Price review frequency',
+        options: ['Fixed for season','Quarterly','Semi-annually','Ad hoc'] },
+      { kind: 'radio', id: '5.2.7', label: '5.2.7 Price premiums for quality or organic certification?', options: ['Yes','No'] },
+      { kind: 'textarea', id: '5.2.7.spec', label: 'If yes, specify premium structure', rows: 2 },
+
+      { kind: 'subheader', text: '5.3 Payment Terms' },
+      { kind: 'radio', id: '5.3.1', label: '5.3.1 Standard payment terms',
+        options: ['Payment on delivery','Net 7 days','Net 14 days','Net 30 days','Net 60 days','Other'] },
+      { kind: 'radio', id: '5.3.2', label: '5.3.2 Partial advance payment available?', options: ['Yes','No'] },
+      { kind: 'field', id: '5.3.2.pct', label: 'If yes, advance %', type: 'number', min: 0, max: 100, suffix: '%' },
+      { kind: 'checkbox', id: '5.3.3', label: '5.3.3 Payment method', options: ['Bank transfer','Cash','Mobile money','Other'] },
+      { kind: 'radio', id: '5.3.4', label: '5.3.4 Can you provide letters of credit or bank guarantees?',
+        options: ['Yes','No','Subject to negotiation'] },
+      { kind: 'radio', id: '5.3.5', label: '5.3.5 Penalties or deductions for poor quality?', options: ['Yes','No'] },
+      { kind: 'textarea', id: '5.3.5.desc', label: 'If yes, describe', rows: 2 },
+    ]
+  },
+  // ============================== SECTION 6 ==============================
+  { id: 's6', title: 'Section 6 · Operational and Logistics Capacity',
+    fields: [
+      { kind: 'subheader', text: '6.1 Collection and Logistics' },
+      { kind: 'radio', id: '6.1.1', label: '6.1.1 Collection method',
+        options: ['Farmers deliver to your depot','You collect from farm','Through aggregator','Mixed model'] },
+      { row: [
+        { kind: 'field', id: '6.1.2', label: '6.1.2 Max collection distance from production area', suffix: 'km', type: 'number', min: 0 },
+        { kind: 'textarea', id: '6.1.3', label: '6.1.3 Transport capacity (vehicles, type, capacity)', rows: 2 },
+      ]},
+      { kind: 'radio', id: '6.1.4', label: '6.1.4 Cold chain or controlled transport available?',
+        options: ['Yes','No','For specific products only'] },
+      { kind: 'radio', id: '6.1.5', label: '6.1.5 Who bears transport cost?',
+        options: ['Offtaker','Farmer','Shared','Depends on distance'] },
+
+      { kind: 'subheader', text: '6.2 Storage' },
+      { kind: 'radio', id: '6.2.1', label: '6.2.1 Do you have storage facilities?',
+        options: ['Yes — owned','Yes — leased','No — use third-party','Not applicable'] },
+      { kind: 'textarea', id: '6.2.2', label: '6.2.2 Storage facility location(s)', rows: 2 },
+      { kind: 'textarea', id: '6.2.3', label: '6.2.3 Storage capacity and type', rows: 2 },
+      { kind: 'textarea', id: '6.2.4', label: '6.2.4 Storage conditions (temperature controlled, dry, ventilated)', rows: 2 },
+      { kind: 'field', id: '6.2.5', label: '6.2.5 Maximum storage duration', placeholder: 'e.g. 12 months at ambient' },
+
+      { kind: 'subheader', text: '6.3 Processing Capability (if applicable)' },
+      { kind: 'textarea', id: '6.3.1', label: '6.3.1 Facility location(s)', rows: 2 },
+      { kind: 'checkbox', id: '6.3.2', label: '6.3.2 Type of processing',
+        options: ['Decortication','Isolate extraction','Oil pressing','Fibre extraction','Milling','Other'] },
+      { kind: 'radio', id: '6.3.3', label: '6.3.3 Facility ownership', options: ['Owned','Leased','Combination'] },
+      { row: [
+        { kind: 'field', id: '6.3.4', label: '6.3.4 Max monthly processing capacity', placeholder: 'e.g. 50 tonnes / month' },
+        { kind: 'field', id: '6.3.5', label: '6.3.5 Current utilisation rate', type: 'number', min: 0, max: 100, suffix: '%' },
+      ]},
+      { kind: 'textarea', id: '6.3.6', label: '6.3.6 Certifications held (GMP, ISO, HACCP, organic)', rows: 2 },
+
+      { kind: 'subheader', text: '6.4 Seasonality and Timing' },
+      { kind: 'field', id: '6.4.1', label: '6.4.1 Months during which you will collect produce', placeholder: 'e.g. Feb – May' },
+      { kind: 'field', id: '6.4.2', label: '6.4.2 Peak collection period', placeholder: 'e.g. Mar – Apr' },
+      { kind: 'textarea', id: '6.4.3', label: '6.4.3 Off-season storage or holding capacity', rows: 2 },
+      { kind: 'radio', id: '6.4.4', label: '6.4.4 Flexibility on collection timing if weather delays harvest?',
+        options: ['Yes','Limited','No'] },
+    ]
+  },
+  // ============================== SECTION 7 ==============================
+  { id: 's7', title: 'Section 7 · Market Access and Downstream Demand',
+    intro: 'Provide evidence that you have genuine downstream demand for the produce you will purchase from Eastern Cape farmers.',
+    fields: [
+      { kind: 'subheader', text: '7.1 Downstream Buyers and Commitments' },
+      { kind: 'textarea', id: '7.1.1', label: '7.1.1 Who are your downstream buyers?', rows: 3,
+        placeholder: 'processors, manufacturers, retailers, exporters OR own processor & manufacturing operations' },
+      { kind: 'radio', id: '7.1.2', label: '7.1.2 Do you have confirmed purchase orders or letters of intent?',
+        options: ['Yes — attached','In negotiation','No — demand is speculative'] },
+      { kind: 'field', id: '7.1.3', label: '7.1.3 Annual volume contractually committed to buyers' },
+      { kind: 'field', id: '7.1.4', label: '7.1.4 Geographic markets served', placeholder: 'local, national, export' },
+      { kind: 'textarea', id: '7.1.5', label: '7.1.5 Export markets and required certifications (if applicable)', rows: 2 },
+
+      { kind: 'subheader', text: '7.2 Absorption Capacity' },
+      { kind: 'field', id: '7.2.1', label: '7.2.1 Total annual volume you can absorb', placeholder: 'tonnes / kg' },
+      { row: [
+        { kind: 'field', id: '7.2.2', label: 'Flower', suffix: 'kg', type: 'number', min: 0 },
+        { kind: 'field', id: '7.2.3', label: 'Seed / Grain', suffix: 't', type: 'number', min: 0 },
+        { kind: 'field', id: '7.2.4', label: 'Bast Fibre', suffix: 't', type: 'number', min: 0 },
+        { kind: 'field', id: '7.2.5', label: 'Hurd', suffix: 't', type: 'number', min: 0 },
+      ]},
+      { kind: 'radio', id: '7.2.6', label: '7.2.6 Growth in absorption expected over 3 years?', options: ['Yes','No','Uncertain'] },
+      { kind: 'textarea', id: '7.2.6.desc', label: 'If yes, describe', rows: 2 },
+
+      { kind: 'subheader', text: '7.3 Market Expansion Plans' },
+      { kind: 'textarea', id: '7.3.1', label: '7.3.1 Planned expansion of market reach, product portfolio, or processing capacity over the next 3 years', rows: 4 },
+    ]
+  },
+  // ============================== SECTION 8 ==============================
+  { id: 's8', title: 'Section 8 · Compliance, References and Supporting Evidence',
+    fields: [
+      { kind: 'subheader', text: '8.1 Regulatory Compliance' },
+      { kind: 'radio', id: '8.1.1', label: '8.1.1 SARS tax clearance status',
+        options: ['Valid tax clearance certificate (attached)','Application in progress','Not applicable'] },
+      { kind: 'textarea', id: '8.1.2', label: '8.1.2 Hemp-specific licences or permits held (where applicable)', rows: 2 },
+      { kind: 'radio', id: '8.1.3', label: '8.1.3 Familiarity with SA hemp regulatory framework',
+        options: ['Excellent','Good','Basic','Limited','None'] },
+      { kind: 'textarea', id: '8.1.4', label: '8.1.4 Experience with THC / CBD / CBG testing and certification', rows: 2 },
+      { kind: 'textarea', id: '8.1.5', label: '8.1.5 Other relevant licences or certifications', rows: 2 },
+
+      { kind: 'subheader', text: '8.2 Financial Standing' },
+      { kind: 'radio', id: '8.2.1', label: '8.2.1 Audited financial statements available?',
+        options: ['Yes (attached)','Management accounts only','No'] },
+      { row: [
+        { kind: 'field', id: '8.2.1.years', label: 'If yes, for how many years?', type: 'number', min: 1, max: 20 },
+        { kind: 'field', id: '8.2.2', label: 'Annual turnover (most recent FY)', prefix: 'R', type: 'number', min: 0, step: '0.01' },
+      ]},
+      { kind: 'radio', id: '8.2.3', label: '8.2.3 Is the entity solvent?', options: ['Yes','No','Under business rescue','Other'] },
+      { kind: 'field', id: '8.2.4', label: '8.2.4 Credit rating or creditworthiness assessment' },
+      { row: [
+        { kind: 'field', id: '8.2.5.bank', label: 'Bank (for verification)' },
+        { kind: 'field', id: '8.2.5.branch', label: 'Branch' },
+        { kind: 'field', id: '8.2.5.account', label: 'Account number' },
+      ]},
+
+      { kind: 'subheader', text: '8.3 References and Track Record' },
+      { kind: 'refBlock', n: 1, title: 'Reference 1 (client / supplier / financial)', idNameKey: '8.3.1', idRelKey: '8.3.2' },
+      { kind: 'refBlock', n: 2, title: 'Reference 2', idNameKey: '8.3.3', idRelKey: '8.3.4' },
+      { kind: 'refBlock', n: 3, title: 'Reference 3 (optional)', idNameKey: '8.3.5', idRelKey: '8.3.6' },
+      { kind: 'textarea', id: '8.3.7', label: '8.3.7 Prior experience in hemp or analogous sectors (cotton, flax, sorghum, etc.)', rows: 3 },
+      { kind: 'radio', id: '8.3.8', label: '8.3.8 Existing contracts within hemp or analogous value chains?',
+        options: ['Yes (attach evidence)','No'] },
+    ]
+  },
+  // ============================== SECTION 9 ==============================
+  { id: 's9', title: 'Section 9 · Risks, Dependencies and Constraints',
+    intro: 'Honest disclosure assists ECRDA in understanding the risk landscape and designing appropriate support.',
+    fields: [
+      { kind: 'textarea', id: '9.1', label: '9.1 Key risks to your offtake model', rows: 3 },
+      { kind: 'textarea', id: '9.2', label: '9.2 Regulatory risks (licensing, THC thresholds, export restrictions)', rows: 3 },
+      { kind: 'textarea', id: '9.3', label: '9.3 Market risks (price volatility, demand fluctuations, competition)', rows: 3 },
+      { kind: 'textarea', id: '9.4', label: '9.4 Operational risks (logistics, processing, storage)', rows: 3 },
+      { kind: 'textarea', id: '9.5', label: '9.5 Climate and production risks affecting farmer supply', rows: 3 },
+      { kind: 'textarea', id: '9.6', label: '9.6 Financial risks (currency, funding, working capital)', rows: 3 },
+      { kind: 'textarea', id: '9.7', label: '9.7 Mitigation measures for the above risks', rows: 3 },
+      { kind: 'textarea', id: '9.8', label: '9.8 Conditions precedent to commencing offtake operations', rows: 3 },
+      { kind: 'textarea', id: '9.add', label: 'Anything else you wish to add to assist ECRDA?', rows: 3 },
+    ]
+  },
+  // ============================== SECTION 10 ==============================
+  { id: 's10', title: 'Section 10 · Respondent Declaration',
+    fields: [
+      { kind: 'paragraph', text: 'I / We, the undersigned, hereby declare that:', bold: true },
+      { kind: 'declare', id: '10.true',    text: 'The information provided in this checklist is true, accurate, and complete to the best of my / our knowledge.' },
+      { kind: 'declare', id: '10.false',   text: 'I / We understand that any false or misleading information may result in disqualification from the ECRDA offtaker pool.' },
+      { kind: 'declare', id: '10.verify',  text: 'I / We consent to ECRDA verifying the information provided and contacting the references listed.' },
+      { kind: 'declare', id: '10.binding', text: 'I / We understand that completion of this checklist does not constitute a binding contract or guarantee of business with ECRDA or any farmer.' },
+      { kind: 'declare', id: '10.update',  text: 'I / We agree to update ECRDA promptly if any material change occurs to the information provided herein.' },
+      { kind: 'declare', id: '10.solvent', text: 'I / We confirm that the offtaker entity is not insolvent, under business rescue, or subject to any legal proceedings that would materially affect its ability to meet offtake commitments.' },
+      { kind: 'divider' },
+      { kind: 'subheader', text: 'Authorised signatory' },
+      { row: [
+        { kind: 'field', id: '10.sig.name',  label: 'Full name (print)', required: true },
+        { kind: 'field', id: '10.sig.title', label: 'Title / Position', required: true },
+      ]},
+      { row: [
+        { kind: 'field', id: '10.sig.date',  label: 'Date', type: 'date', required: true },
+        { kind: 'field', id: '10.sig.stamp', label: 'Company stamp / seal (if applicable)' },
+      ]},
+      { kind: 'note', text: 'Physical signature is captured when this form is downloaded as PDF (use the Print button) and signed by hand. Digital signature option will be added when ECRDA\'s e-signature platform goes live.' },
+    ]
+  },
+  // ============================== ANNEXURE A ==============================
+  { id: 'sA', title: 'Annexure A · Supporting Documents Checklist',
+    intro: 'Tick the documents you have attached. Submissions with comprehensive supporting evidence are more readily evaluated.',
+    fields: [
+      { kind: 'docGroup', title: 'A.1 Legal and Registration', items: ['Company registration certificate (CIPC)','Memorandum of Incorporation (MOI)','SARS tax registration proof','B-BBEE certificate or affidavit','Identity documents of directors / signatories'] },
+      { kind: 'docGroup', title: 'A.2 Financial Information', items: ['Audited financial statements (last 2-3 years)','Management accounts (if audited unavailable)','Bank statement (last 3 months)','Letter of credit or bank guarantee'] },
+      { kind: 'docGroup', title: 'A.3 Licences, Permits, Certifications', items: ['Hemp handling / processing / trading licences','GMP / ISO / HACCP / quality certifications','Organic certification','Export licence or permit'] },
+      { kind: 'docGroup', title: 'A.4 Market and Commercial Evidence', items: ['Purchase orders or LOIs from downstream buyers','Existing supply agreements or offtake contracts','Buyer references','Market research / demand assessment'] },
+      { kind: 'docGroup', title: 'A.5 Operational Evidence', items: ['Photos / descriptions of facilities + equipment','Logistics capability statement','Insurance certificates','Health and safety compliance documentation'] },
+      { kind: 'docGroup', title: 'A.6 References', items: ['Reference letter 1','Reference letter 2','Reference letter 3 (optional)'] },
+      { kind: 'docGroup', title: 'A.7 Other', items: ['Company profile / brochure','CVs of key technical staff','Other supporting documentation'] },
+    ]
+  },
+];
+
+/* ====================================================================
+   RENDERER — plain DOM, no string parsing
+   ==================================================================== */
+const el = (tag, props = {}, children = []) => {
+  const e = document.createElement(tag);
+  Object.entries(props).forEach(([k, v]) => {
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v === true) e.setAttribute(k, '');
+    else if (v !== false && v !== null && v !== undefined) e.setAttribute(k, v);
+  });
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c == null) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+};
+
+function renderField(f) {
+  const id = 'f-' + f.id;
+  const inputProps = {
+    id, name: f.id, type: f.type || 'text',
+    placeholder: f.placeholder || '',
+    class: 'w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm' +
+           (f.prefix ? ' pl-7' : '') + (f.suffix ? ' pr-10' : ''),
+  };
+  if (f.required) inputProps.required = true;
+  if (f.min !== undefined) inputProps.min = f.min;
+  if (f.max !== undefined) inputProps.max = f.max;
+  if (f.step) inputProps.step = f.step;
+  const input = el('input', inputProps);
+  const wrap = el('div', { class: 'relative' }, [input]);
+  if (f.prefix) wrap.appendChild(el('span', { class: 'absolute inset-y-0 left-2 flex items-center text-slate-400 text-xs pointer-events-none' }, [f.prefix]));
+  if (f.suffix) wrap.appendChild(el('span', { class: 'absolute inset-y-0 right-2 flex items-center text-slate-400 text-xs pointer-events-none' }, [f.suffix]));
+  return el('div', {}, [
+    el('label', { for: id, class: 'block text-xs font-semibold text-slate-700 mb-1' }, [
+      f.label, f.required ? el('span', { class: 'text-rose-600' }, [' *']) : null
+    ]),
+    wrap,
+  ]);
+}
+
+function renderTextarea(f) {
+  const id = 't-' + f.id;
+  const ta = el('textarea', {
+    id, name: f.id, rows: f.rows || 2,
+    placeholder: f.placeholder || '',
+    class: 'w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm',
+    ...(f.required ? { required: true } : {}),
+  });
+  return el('div', {}, [
+    el('label', { for: id, class: 'block text-xs font-semibold text-slate-700 mb-1' }, [
+      f.label, f.required ? el('span', { class: 'text-rose-600' }, [' *']) : null
+    ]),
+    ta,
+  ]);
+}
+
+function renderCheckGroup(f, type) {
+  const pills = (f.options || []).map(opt =>
+    el('label', { class: 'check-pill' }, [
+      el('input', { type, name: f.id, value: opt, ...(f.required && type === 'radio' ? { required: true } : {}) }),
+      el('span', {}, [opt]),
+    ])
+  );
+  return el('div', {}, [
+    el('div', { class: 'text-xs font-semibold text-slate-700 mb-1' }, [
+      f.label, f.required ? el('span', { class: 'text-rose-600' }, [' *']) : null
+    ]),
+    el('div', { class: 'flex flex-wrap gap-2' }, pills),
+  ]);
+}
+
+function renderProductRow(f) {
+  return el('div', { class: 'grid grid-cols-1 md:grid-cols-[1fr_120px_2fr] gap-2 items-center' }, [
+    el('div', { class: 'text-sm text-slate-700' }, [f.label]),
+    el('label', { class: 'check-pill' }, [
+      el('input', { type: 'checkbox', name: f.id + '.interested', value: 'Yes' }),
+      el('span', {}, ['Interested']),
+    ]),
+    el('input', {
+      type: 'text', name: f.id + '.spec',
+      placeholder: 'Quality / specification requirements',
+      class: 'w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm',
+    }),
+  ]);
+}
+
+function renderSupportRow(f) {
+  return el('div', { class: 'grid grid-cols-1 md:grid-cols-[1fr_auto_2fr] gap-2 items-center' }, [
+    el('div', { class: 'text-sm text-slate-700' }, [f.label]),
+    el('div', { class: 'flex gap-1' }, ['Yes','No','Partial'].map(v =>
+      el('label', { class: 'check-pill' }, [
+        el('input', { type: 'radio', name: f.id + '.provided', value: v }),
+        el('span', {}, [v]),
+      ])
+    )),
+    el('input', {
+      type: 'text', name: f.id + '.details',
+      placeholder: 'Details / frequency / method',
+      class: 'w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm',
+    }),
+  ]);
+}
+
+function renderDeclare(f) {
+  return el('label', { class: 'flex items-start gap-2 cursor-pointer' }, [
+    el('input', { type: 'checkbox', name: f.id, value: 'agree', required: true, class: 'mt-0.5' }),
+    el('span', { class: 'text-sm' }, [f.text, el('span', { class: 'text-rose-600' }, [' *'])]),
+  ]);
+}
+
+function renderDocGroup(f) {
+  const slug = (f.title || '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase();
+  return el('div', {}, [
+    el('h3', { class: 'text-sm font-bold text-slate-700 mb-2' }, [f.title]),
+    el('div', { class: 'space-y-1 ml-1' }, (f.items || []).map((it, i) =>
+      el('label', { class: 'flex items-start gap-2 cursor-pointer text-sm text-slate-700' }, [
+        el('input', { type: 'checkbox', name: `doc.${slug}.${i}`, value: 'attached', class: 'mt-0.5' }),
+        el('span', {}, [it]),
+      ])
+    )),
+  ]);
+}
+
+function renderRefBlock(f) {
+  return el('div', { class: 'border border-slate-200 rounded-lg p-4' }, [
+    el('div', { class: 'font-semibold text-sm text-slate-700 mb-2' }, [f.title]),
+    el('div', { class: 'grid grid-cols-1 md:grid-cols-2 gap-3' }, [
+      renderField({ kind: 'field', id: f.idNameKey, label: 'Name + contact' }),
+      renderField({ kind: 'field', id: f.idRelKey, label: 'Relationship to you' }),
+    ]),
+  ]);
+}
+
+function renderItem(f) {
+  // Row wrapper
+  if (f.row) {
+    const cols = f.row.length;
+    const gridClass = cols === 2 ? 'md:grid-cols-2' : cols === 3 ? 'md:grid-cols-3' : 'md:grid-cols-4';
+    return el('div', { class: `grid grid-cols-1 ${gridClass} gap-3` }, f.row.map(renderItem));
+  }
+  switch (f.kind) {
+    case 'field':       return renderField(f);
+    case 'textarea':    return renderTextarea(f);
+    case 'radio':       return renderCheckGroup(f, 'radio');
+    case 'checkbox':    return renderCheckGroup(f, 'checkbox');
+    case 'productRow':  return renderProductRow(f);
+    case 'supportRow':  return renderSupportRow(f);
+    case 'declare':     return renderDeclare(f);
+    case 'docGroup':    return renderDocGroup(f);
+    case 'refBlock':    return renderRefBlock(f);
+    case 'subheader':   return el('div', {}, [
+                          el('h3', { class: 'text-sm font-bold text-slate-700 mb-1 mt-2' }, [f.text]),
+                          f.intro ? el('p', { class: 'text-xs text-slate-500 italic mb-2' }, [f.intro]) : null,
+                        ]);
+    case 'divider':     return el('hr', { class: 'border-slate-100 my-2' });
+    case 'paragraph':   return el('p', { class: 'text-sm text-slate-700 ' + (f.bold ? 'font-semibold' : '') }, [f.text]);
+    case 'note':        return el('p', { class: 'text-xs text-slate-500 italic' }, [f.text]);
+    default:            return el('div', { class: 'text-xs text-rose-500' }, [`Unknown kind: ${f.kind}`]);
+  }
+}
+
+function renderSection(s) {
+  const headerChildren = [el('h2', { class: 'text-base font-bold text-slate-900' }, [s.title])];
+  if (s.metaPill) {
+    headerChildren.push(el('span', {
+      class: 'text-xs font-semibold',
+      style: `color: ${s.metaPill.color}`,
+    }, [s.metaPill.text]));
+  } else if (s.meta) {
+    headerChildren.push(el('span', { class: 'text-xs text-slate-500 font-mono' }, [s.meta]));
+  }
+
+  const body = el('div', { class: 'p-5 space-y-4' });
+  if (s.intro) body.appendChild(el('p', { class: 'text-xs text-slate-500 italic' }, [s.intro]));
+  s.fields.forEach(f => body.appendChild(renderItem(f)));
+
+  return el('section', { id: s.id, class: 'bg-white border border-slate-200 rounded-xl shadow-sm' }, [
+    el('header', { class: 'px-5 py-3 border-b border-slate-100 flex items-center justify-between' }, headerChildren),
+    body,
+  ]);
+}
+
+/* ====================================================================
+   BUILD FORM + SUBMIT PANEL
+   ==================================================================== */
+const form = document.getElementById('checklistForm');
+formConfig.forEach(s => form.appendChild(renderSection(s)));
+
+// Submit panel
+const submitPanel = el('section', { id: 'submitPanel', class: 'bg-gradient-to-br from-[#1F4D2C] to-[#0E7490] text-white rounded-xl shadow-lg p-6' }, [
+  el('h2', { class: 'text-lg font-bold mb-2' }, ['Submit your checklist']),
+  el('p', { class: 'text-sm text-emerald-100 mb-4' }, [
+    'Pick the option that works for your team. The JSON download is the format ECRDA’s technical analysis team prefers (machine-readable, ingests directly into the vetted-pool register).'
+  ]),
+  el('div', { class: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4' }, [
+    el('button', { type: 'button', onclick: () => window.print(), class: 'bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-lg' }, ['🖨  Print to PDF']),
+    el('button', { type: 'button', onclick: submitToApi, id: 'submitToSaasBtn', class: 'bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 px-4 rounded-lg' }, ['🚀  Submit to ECRDA']),
+  ]),
+  el('div', { id: 'submitFeedback', class: 'mb-3' }),
+  el('div', { class: 'grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-emerald-100' }, [
+    el('div', { class: 'bg-white/10 rounded-lg p-3', html: '<div class="font-semibold text-white mb-1">📧 Email submission</div>Send your downloaded JSON + supporting docs to: <span class="font-mono text-white">offtakers@ecrda.gov.za</span> (placeholder)' }),
+    el('div', { class: 'bg-white/10 rounded-lg p-3', html: '<div class="font-semibold text-white mb-1">📮 Postal submission</div>Print + sign the PDF and post it together with supporting documents to: ECRDA Programme Office, East London (address TBC)' }),
+  ]),
+  el('p', { class: 'text-[11px] text-emerald-200 italic mt-4' }, [
+    'All information will be treated confidentially in accordance with POPIA (Protection of Personal Information Act, 4 of 2013) and used solely for the purposes of evaluating offtaker suitability and building a farmer-facing directory.'
+  ]),
+]);
+form.appendChild(submitPanel);
+
+// Footer
+form.appendChild(el('footer', { class: 'text-center text-xs text-slate-400 py-6', html:
+  'Eastern Cape Rural Development Agency · Building sustainable agricultural value chains in the Eastern Cape<br>' +
+  'www.ecrda.gov.za · © 2026 ECRDA · Confidential — For Official Use Only<br>' +
+  '<span class="font-mono mt-1 inline-block">Form v1.0 · April 2026 · Built for the ECRDA Hemp Programme</span>'
+}));
+
+/* ====================================================================
+   AUTOSAVE / RESTORE / DOWNLOAD / API
+   ==================================================================== */
+const STORAGE_KEY = 'ecrda_offtaker_checklist_v1';
+
+function snapshot() {
+  const data = {};
+  form.querySelectorAll('input, textarea, select').forEach(el => {
+    if (!el.name) return;
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      if (el.checked) {
+        if (el.type === 'checkbox') {
+          if (!data[el.name]) data[el.name] = [];
+          data[el.name].push(el.value);
+        } else {
+          data[el.name] = el.value;
+        }
+      }
+    } else if (el.value) {
+      data[el.name] = el.value;
+    }
+  });
+  return data;
+}
+
+function saveDraft() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), data: snapshot() }));
+    setAutosave('Draft saved · ' + new Date().toLocaleTimeString());
+  } catch (e) { setAutosave('Draft save failed: ' + e.message); }
+}
+
+function restoreDraft() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) { alert('No saved draft on this device.'); return; }
+  try {
+    const { data } = JSON.parse(raw);
+    Object.entries(data).forEach(([name, val]) => {
+      const els = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
+      els.forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+          const values = Array.isArray(val) ? val : [val];
+          el.checked = values.includes(el.value);
+        } else {
+          el.value = val;
+        }
+      });
+    });
+    updateProgress();
+    setAutosave('Draft restored');
+  } catch (e) { alert('Could not restore: ' + e.message); }
+}
+
+function clearDraft() {
+  if (!confirm('Clear the saved draft on this device?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  setAutosave('Draft cleared');
+}
+
+function setAutosave(msg) { document.getElementById('autosaveStatus').textContent = msg; }
+
+let autosaveTimer;
+form.addEventListener('input', () => {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(saveDraft, 2500);
+  updateProgress();
+});
+
+function updateProgress() {
+  const els = form.querySelectorAll('input, textarea, select');
+  const groups = new Set();
+  const filled = new Set();
+  els.forEach(el => {
+    if (!el.name) return;
+    groups.add(el.name);
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      if (el.checked) filled.add(el.name);
+    } else if ((el.value || '').trim()) {
+      filled.add(el.name);
+    }
+  });
+  const pct = groups.size ? Math.round((filled.size / groups.size) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '%';
+}
+
+/* Side-nav active highlight */
+function highlightActive() {
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.nav-link');
+  const y = window.scrollY + 80;
+  let current = sections[0]?.id;
+  sections.forEach(s => { if (s.offsetTop <= y) current = s.id; });
+  links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+}
+window.addEventListener('scroll', highlightActive, { passive: true });
+
+function downloadJSON() {
+  const data = snapshot();
+  const payload = {
+    formVersion: '1.0',
+    formTitle: 'ECRDA Hemp Offtaker Submission Checklist',
+    capturedAt: new Date().toISOString(),
+    submissionRef: document.getElementById('submissionRef').textContent.trim(),
+    data,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 10);
+  const entity = (data['1.1'] || 'unknown_entity').replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 40);
+  a.href = url;
+  a.download = `ECRDA-Offtaker-${entity}-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+const SAAS_API_BASE = window.location.origin.replace(':5173', ':4000');
+
+function readAuthToken() {
+  try {
+    const raw = localStorage.getItem('3wi.auth.v1');
+    return raw ? JSON.parse(raw).accessToken : null;
+  } catch { return null; }
+}
+
+function showFeedback(html, kind) {
+  const fb = document.getElementById('submitFeedback');
+  if (!fb) return;
+  const colors = {
+    ok:   'bg-emerald-100 border-emerald-300 text-emerald-900',
+    warn: 'bg-amber-100 border-amber-300 text-amber-900',
+    err:  'bg-rose-100 border-rose-300 text-rose-900',
+    info: 'bg-cyan-100 border-cyan-300 text-cyan-900',
+  };
+  fb.className = `border rounded-lg p-3 text-

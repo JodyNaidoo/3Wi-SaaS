@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3Wi PMO Suite — AI-powered project management for government-funded programmes</title>
+    <meta name="description" content="3Wi PMO Suite gives your team, your funders, and your beneficiaries a single source of truth — AI-generated reports, real-time gate tracking, role-specific command centres." />
+    <link rel="icon" href="/favicon.svg" />
+    <style>
+      :root { --p: #0F172A; --s: #015807; --a: #F59E0B; --bg: #ffffff; --ink: #0F172A; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+      a { color: inherit; }
+      .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+      section { padding: 5rem 0; }
+      h1, h2, h3 { line-height: 1.15; margin: 0 0 .5em 0; }
+      h1 { font-size: clamp(2.25rem, 4.5vw, 3.5rem); }
+      h2 { font-size: 2rem; }
+      .pill { display: inline-block; font-size: .8rem; padding: 4px 10px; border-radius: 999px; background: rgba(1,88,7,.1); color: var(--s); font-weight: 600; }
+      .btn { display: inline-block; padding: .8rem 1.4rem; border-radius: .6rem; font-weight: 600; text-decoration: none; transition: opacity .15s; }
+      .btn-primary { background: var(--s); color: white; }
+      .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,.4); }
+      .grid-3 { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .grid-5 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+      .card { background: white; border: 1px solid #E2E8F0; border-radius: .75rem; padding: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+      .hero { background: var(--p); color: white; }
+      .hero .accent { color: var(--s); }
+      .hero h1 span { color: #FDF31C; }
+      .footer { background: #F8FAFC; padding: 2.5rem 0; font-size: .9rem; border-top: 1px solid #E2E8F0; }
+      .pricing-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .pricing-card.featured { border: 2px solid var(--s); }
+      .badge-hempire { background: #3F1101; color: #FDF31C; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

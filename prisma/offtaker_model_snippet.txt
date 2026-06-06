@@ -1,0 +1,79 @@
+// =============================================================================
+// 0008 OFFTAKER SUBMISSIONS — paste into prisma/schema.prisma
+// =============================================================================
+// 1. Add the enum + model below at the end of the file.
+// 2. Add ONE relation line into the existing Tenant model:
+//      offtakerSubmissions  OfftakerSubmission[]
+// 3. Run: npm run prisma:generate (from apps/api)
+// =============================================================================
+
+enum OfftakerStatus {
+  draft
+  submitted
+  screening
+  tna
+  verification
+  recommendation
+  approved
+  approved_conditional
+  declined
+  deferred
+  withdrawn
+
+  @@map("offtaker_status")
+}
+
+model OfftakerSubmission {
+  id                     String           @id @default(uuid()) @db.Uuid
+  tenantId               String           @map("tenant_id") @db.Uuid
+  tenant                 Tenant           @relation(fields: [tenantId], references: [id])
+
+  legalName              String           @map("legal_name")
+  tradingName            String?          @map("trading_name")
+  registrationNumber     String?          @map("registration_number")
+  legalEntityType        String?          @map("legal_entity_type")
+  primaryContactName     String?          @map("primary_contact_name")
+  primaryContactEmail    String           @map("primary_contact_email")
+  primaryContactPhone    String?          @map("primary_contact_phone")
+  bbbeeLevel             String?          @map("bbbee_level")
+  offtakerCategory       String?          @map("offtaker_category")
+  targetDistricts        String[]         @map("target_districts")
+  productCategories      String[]         @map("product_categories")
+  preferredFarmerTypes   String[]         @map("preferred_farmer_types")
+  totalHectaresCapacity  Decimal?         @map("total_hectares_capacity")
+  estimatedFarmers       Int?             @map("estimated_farmers")
+
+  formPayload            Json             @map("form_payload")
+
+  status                 OfftakerStatus   @default(submitted)
+  screeningScorecard     Json?            @map("screening_scorecard")
+  tnaSummary             String?          @map("tna_summary")
+  verificationNotes      String?          @map("verification_notes")
+  recommendation         String?
+  recommendationNotes    String?          @map("recommendation_notes")
+  conditions             String?
+
+  reviewerName           String?          @map("reviewer_name")
+  reviewerDate           DateTime?        @map("reviewer_date") @db.Date
+  programmeManagerName   String?          @map("programme_manager_name")
+  programmeManagerDate   DateTime?        @map("programme_manager_date") @db.Date
+  sectorHeadName         String?          @map("sector_head_name")
+  sectorHeadDate         DateTime?        @map("sector_head_date") @db.Date
+  ipmExecutiveName       String?          @map("ipm_executive_name")
+  ipmExecutiveDate       DateTime?        @map("ipm_executive_date") @db.Date
+  ceoName                String?          @map("ceo_name")
+  ceoDate                DateTime?        @map("ceo_date") @db.Date
+
+  submissionRef          String?          @map("submission_ref")
+  submittedAt            DateTime         @default(now()) @map("submitted_at")
+  decidedAt              DateTime?        @map("decided_at")
+  createdByUserId        String?          @map("created_by_user_id") @db.Uuid
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@index([tenantId, offtakerCategory])
+  @@index([tenantId, bbbeeLevel])
+  @@index([submittedAt(sort: Desc)])
+  @@map("offtaker_submissions")
+}

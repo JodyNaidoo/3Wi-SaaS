@@ -1,0 +1,55 @@
+/* 3Wi PMO Suite — global styles
+   Default palette is 3Wi neutral. When a tenant logs in we set CSS vars
+   on :root from their tenants row so brand colours flow through.        */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #0F172A;   /* charcoal */
+  --brand-secondary: #0EA5A4; /* teal     */
+  --brand-accent: #F59E0B;    /* amber    */
+}
+
+[data-tenant="sunshines"] {
+  --brand-primary: #3F1101;
+  --brand-secondary: #015807;
+  --brand-accent: #FDF31C;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.btn-primary {
+  background-color: var(--brand-secondary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .9; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.card {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+.hotkey-pill {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: .75rem;
+  background: rgba(15, 23, 42, .07);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* farmer-portal: minimum 14px text on all controls (low-literacy users) */
+.farmer-shell, .farmer-shell * { font-size: max(14px, 1em); }

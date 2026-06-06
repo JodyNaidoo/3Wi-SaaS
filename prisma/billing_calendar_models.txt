@@ -1,0 +1,242 @@
+// =====================================================================
+// PRISMA MODEL SNIPPETS — paste into prisma/schema.prisma
+// After pasting:  npx prisma generate --schema=prisma/schema.prisma
+// =====================================================================
+// Source: supabase/migrations/0010_billing.sql + 0011_calendar.sql
+//
+// NAMING NOTE
+//   The existing schema already has `model Invoice` (Stripe SaaS billing)
+//   mapped to the `invoices` table. To avoid a collision, the new
+//   transactional AR (accounts-receivable) models below are prefixed
+//   with `Ar`:  ArInvoice, ArInvoiceLine, ArPayment.
+//   Customer + CalendarEvent stay unprefixed (no collisions).
+//
+//   Relation field names on Customer / CalendarEvent are kept as
+//   `invoices` / `payments` / `invoice` so existing API + UI code that
+//   does `c.invoices` or `include: { invoice: true }` keeps working.
+// =====================================================================
+
+// ---------- ENUMS ----------
+enum CustomerType {
+  external
+  internal_unit
+}
+
+enum CustomerStatus {
+  active
+  pipeline
+  paused
+  churned
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  viewed
+  partial
+  paid
+  overdue
+  void
+}
+
+enum PaymentMethod {
+  bank_transfer
+  cash
+  mobile
+  card
+  cheque
+  intercompany_netting
+  other
+}
+
+enum EventType {
+  deliverable
+  deadline
+  meeting
+  milestone
+  training
+  campaign_launch
+  content_publish
+  recurring
+  other
+}
+
+enum EventStatus {
+  planned
+  in_progress
+  completed
+  cancelled
+  overdue
+}
+
+// ---------- CUSTOMERS (table: customers) ----------
+model Customer {
+  id                String          @id @default(uuid()) @db.Uuid
+  tenantId          String          @map("tenant_id") @db.Uuid
+  customerType      CustomerType    @default(external) @map("customer_type")
+  internalUnitSlug  String?         @map("internal_unit_slug")
+  displayName       String          @map("display_name")
+  companyName       String?         @map("company_name")
+  givenName         String?         @map("given_name")
+  familyName        String?         @map("family_name")
+  title             String?
+  primaryEmail      String          @map("primary_email")
+  primaryPhone      String?         @map("primary_phone")
+  mobile            String?
+  website           String?
+  billLine1         String?         @map("bill_line1")
+  billLine2         String?         @map("bill_line2")
+  billCity          String?         @map("bill_city")
+  billProvince      String?         @map("bill_province")
+  billPostal        String?         @map("bill_postal")
+  billCountry       String?         @default("South Africa") @map("bill_country")
+  shipLine1         String?         @map("ship_line1")
+  shipLine2         String?         @map("ship_line2")
+  shipCity          String?         @map("ship_city")
+  shipProvince      String?         @map("ship_province")
+  shipPostal        String?         @map("ship_postal")
+  shipCountry       String?         @map("ship_country")
+  taxable           Boolean         @default(true)
+  vatNumber         String?         @map("vat_number")
+  companyRegNumber  String?         @map("company_reg_number")
+  bbbeeLevel        String?         @map("bbbee_level")
+  currency          String          @default("ZAR")
+  paymentTerms      String          @default("Net 30") @map("payment_terms")
+  status            CustomerStatus  @default(active)
+  industry          String?
+  accountManager    String?         @map("account_manager")
+  notes             String?
+  qboCustomerId     String?         @map("qbo_customer_id")
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?         @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime        @default(now()) @map("updated_at") @db.Timestamptz
+
+  // relation field name stays `invoices` so API/UI keep working
+  invoices          ArInvoice[]
+  events            CalendarEvent[]
+
+  @@index([tenantId])
+  @@index([customerType])
+  @@index([status])
+  @@map("customers")
+}
+
+// ---------- AR INVOICES (table: ar_invoices) ----------
+model ArInvoice {
+  id                String              @id @default(uuid()) @db.Uuid
+  tenantId          String              @map("tenant_id") @db.Uuid
+  invoiceNumber     String              @map("invoice_number")
+  providerUnitSlug  String              @map("provider_unit_slug")
+  customerId        String              @map("customer_id") @db.Uuid
+  isIntercompany    Boolean             @default(false) @map("is_intercompany")
+  issueDate         DateTime            @default(now()) @map("issue_date") @db.Date
+  dueDate           DateTime            @map("due_date") @db.Date
+  currency          String              @default("ZAR")
+  subtotalZar       Decimal             @default(0) @map("subtotal_zar") @db.Decimal(14, 2)
+  vatAmountZar      Decimal             @default(0) @map("vat_amount_zar") @db.Decimal(14, 2)
+  totalZar          Decimal             @default(0) @map("total_zar") @db.Decimal(14, 2)
+  amountPaidZar     Decimal             @default(0) @map("amount_paid_zar") @db.Decimal(14, 2)
+  balanceDueZar     Decimal?            @map("balance_due_zar") @db.Decimal(14, 2)
+  status            InvoiceStatus       @default(draft)
+  sentAt            DateTime?           @map("sent_at") @db.Timestamptz
+  viewedAt          DateTime?           @map("viewed_at") @db.Timestamptz
+  paidAt            DateTime?           @map("paid_at") @db.Timestamptz
+  notes             String?
+  internalNotes     String?             @map("internal_notes")
+  engagementId      String?             @map("engagement_id") @db.Uuid
+  qboInvoiceId      String?             @map("qbo_invoice_id")
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?             @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime            @default(now()) @map("updated_at") @db.Timestamptz
+
+  customer          Customer            @relation(fields: [customerId], references: [id])
+  // relation field names stay `lineItems` / `payments`
+  lineItems         ArInvoiceLine[]
+  payments          ArPayment[]
+  events            CalendarEvent[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([providerUnitSlug])
+  @@index([status])
+  @@map("ar_invoices")
+}
+
+// ---------- AR INVOICE LINES (table: ar_invoice_lines) ----------
+model ArInvoiceLine {
+  id            String    @id @default(uuid()) @db.Uuid
+  invoiceId     String    @map("invoice_id") @db.Uuid
+  serviceCode   String?   @map("service_code")
+  description   String
+  quantity      Decimal   @default(1) @db.Decimal(10, 2)
+  unit          String?
+  unitPriceZar  Decimal   @map("unit_price_zar") @db.Decimal(12, 2)
+  lineTotalZar  Decimal?  @map("line_total_zar") @db.Decimal(14, 2)
+  vatRatePct    Decimal   @default(15.0) @map("vat_rate_pct") @db.Decimal(5, 2)
+  sortOrder     Int       @default(0) @map("sort_order")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  invoice       ArInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("ar_invoice_lines")
+}
+
+// ---------- AR PAYMENTS (table: ar_payments) ----------
+model ArPayment {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @map("tenant_id") @db.Uuid
+  invoiceId       String        @map("invoice_id") @db.Uuid
+  paymentDate     DateTime      @default(now()) @map("payment_date") @db.Date
+  amountZar       Decimal       @map("amount_zar") @db.Decimal(14, 2)
+  method          PaymentMethod @default(bank_transfer)
+  reference       String?
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId String?       @map("created_by_user_id") @db.Uuid
+
+  invoice         ArInvoice     @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("ar_payments")
+}
+
+// ---------- CALENDAR EVENTS (table: calendar_events) ----------
+model CalendarEvent {
+  id                String       @id @default(uuid()) @db.Uuid
+  tenantId          String       @map("tenant_id") @db.Uuid
+  title             String
+  type              EventType    @default(other)
+  status            EventStatus  @default(planned)
+  providerUnitSlug  String?      @map("provider_unit_slug")
+  customerId        String?      @map("customer_id") @db.Uuid
+  engagementId      String?      @map("engagement_id") @db.Uuid
+  invoiceId         String?      @map("invoice_id") @db.Uuid
+  startAt           DateTime     @map("start_at") @db.Timestamptz
+  endAt             DateTime?    @map("end_at") @db.Timestamptz
+  allDay            Boolean      @default(false) @map("all_day")
+  timezone          String       @default("Africa/Johannesburg")
+  isRecurring       Boolean      @default(false) @map("is_recurring")
+  recurringRule     String?      @map("recurring_rule")
+  recurringUntil    DateTime?    @map("recurring_until") @db.Timestamptz
+  ownerUserId       String?      @map("owner_user_id") @db.Uuid
+  assigneeEmails    String[]     @map("assignee_emails")
+  description       String?
+  location          String?
+  url               String?
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?      @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime     @default(now()) @map("updated_at") @db.Timestamptz
+
+  customer          Customer?    @relation(fields: [customerId], references: [id])
+  invoice           ArInvoice?   @relation(fields: [invoiceId], references: [id])
+
+  @@index([tenantId])
+  @@index([startAt])
+  @@index([providerUnitSlug])
+  @@index([type])
+  @@index([status])
+  @@map("calendar_events")
+}

@@ -1,0 +1,42 @@
+// =====================================================================
+// Paste this model into prisma/schema.prisma (anywhere among models)
+// Then add the back-relation to OfftakerSubmission and Tenant.
+// Finally run:  cd apps/api && npm run prisma:generate
+// =====================================================================
+
+model OfftakerAttachment {
+  id                  String              @id @default(uuid()) @db.Uuid
+  tenantId            String              @map("tenant_id") @db.Uuid
+  submissionId        String              @map("submission_id") @db.Uuid
+  annexureSection     String              @map("annexure_section")
+  annexureItem        String              @map("annexure_item")
+  annexureItemIndex   Int?                @map("annexure_item_index")
+  originalFilename    String              @map("original_filename")
+  storagePath         String              @map("storage_path")
+  mimeType            String              @map("mime_type")
+  sizeBytes           Int                 @map("size_bytes")
+  uploadedAt          DateTime            @default(now()) @map("uploaded_at") @db.Timestamptz(6)
+  uploadedByUserId    String?             @map("uploaded_by_user_id") @db.Uuid
+  reviewed            Boolean             @default(false)
+  reviewedAt          DateTime?           @map("reviewed_at") @db.Timestamptz(6)
+  reviewerUserId      String?             @map("reviewer_user_id") @db.Uuid
+  reviewNote          String?             @map("review_note")
+
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  submission          OfftakerSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([tenantId])
+  @@index([annexureSection])
+  @@map("offtaker_attachments")
+}
+
+// =====================================================================
+// BACK-RELATIONS — add ONE line to each existing model
+// =====================================================================
+
+// In  model Tenant {  ... }  add:
+//      offtakerAttachments        OfftakerAttachment[]
+
+// In  model OfftakerSubmission {  ... }  add:
+//      attachments                OfftakerAttachment[]

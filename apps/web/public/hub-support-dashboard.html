@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hemp Hub Support Dashboard — MOCK · Amathole Hemp Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  .lens-tab.active { background-color: white; border-bottom: 2px solid transparent; color: #0f172a; font-weight: 700; }
+  .lens-tab.active.farmer  { border-bottom-color: #015807; color: #015807; }
+  .lens-tab.active.ecrda   { border-bottom-color: #0E7490; color: #0E7490; }
+  .lens-tab.active.sedfa   { border-bottom-color: #B45309; color: #B45309; }
+  .lens-tab.active.offtaker{ border-bottom-color: #7C3AED; color: #7C3AED; }
+  .lens-tab.active.ops     { border-bottom-color: #475569; color: #0f172a; }
+  .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  @keyframes pulse { 50% { opacity: 0.6; } }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased font-sans min-h-screen">
+
+<!-- ============================================================
+     HEADER — HUB IDENTITY
+     ============================================================ -->
+<header class="bg-gradient-to-br from-[#1F4D2C] via-[#015807] to-[#0E7490] text-white">
+  <div class="max-w-7xl mx-auto px-6 py-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-widest text-emerald-200">
+            Hemp Hub Support Dashboard · MOCK
+          </span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-yellow-300/20 text-yellow-200 font-semibold uppercase">
+            Demo data
+          </span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold">Amathole Hemp Hub</h1>
+        <p class="text-sm text-emerald-100 mt-1">
+          Eastern Cape · Stutterheim cluster ·
+          <span class="font-mono text-white">Active since Apr 2026</span>
+        </p>
+      </div>
+      <div class="text-right text-xs text-emerald-100">
+        <div class="flex items-center gap-2 justify-end">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-300 pulse"></span>
+          <span class="font-semibold text-emerald-50 uppercase tracking-wider">Operational</span>
+        </div>
+        <div class="mt-2">Reporting period: <span class="font-mono text-white">Week 22 · 26 May – 1 Jun 2026</span></div>
+        <div class="mt-1">Cohort: <span class="font-mono text-white">P1 Seedlings (46 growers)</span></div>
+        <div class="mt-1">Hub manager: <span class="font-mono text-white">Phakama Yokwana</span></div>
+      </div>
+    </div>
+
+    <!-- Top KPIs (universal status strip) -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+      <TopKpi label="Active farmers" value="28" sub="/ 32 enrolled" />
+      <TopKpi label="Throughput this week" value="2 840 kg" sub="↑ 12% vs prior week" />
+      <TopKpi label="Hub capacity used" value="54%" sub="Drying line + storage" />
+      <TopKpi label="Stock on hand" value="9.6 t" sub="across 4 SKUs" />
+      <TopKpi label="Open alerts" value="3" sub="2 amber · 1 red" alert="true" />
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     LENS TABS
+     ============================================================ -->
+<nav class="bg-slate-200/60 border-b border-slate-300 sticky top-0 z-30 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
+    <button class="lens-tab ops active px-4 py-3 text-sm font-medium text-slate-600 hover:bg-white/60" data-lens="ops">⚙ Operations</button>
+    <button class="lens-tab farmer px-4 py-3 text-sm font-medium text-slate-600 hover:bg-white/60" data-lens="farmer">🌱 Farmers</button>
+    <button class="lens-tab ecrda px-4 py-3 text-sm font-medium text-slate-600 hover:bg-white/60" data-lens="ecrda">🏛 ECRDA</button>
+    <button class="lens-tab sedfa px-4 py-3 text-sm font-medium text-slate-600 hover:bg-white/60" data-lens="sedfa">💰 SEDFA</button>
+    <button class="lens-tab offtaker px-4 py-3 text-sm font-medium text-slate-600 hover:bg-white/60" data-lens="offtaker">📦 Off-takers</button>
+  </div>
+</nav>
+
+<!-- ============================================================
+     LENS PANELS
+     ============================================================ -->
+<main class="max-w-7xl mx-auto px-6 py-6" id="lensRoot">
+  <!-- Each lens panel rendered by JS below -->
+</main>
+
+<footer class="text-center text-xs text-slate-400 py-6 px-4">
+  Hub Support Dashboard — Mock-up for ECRDA 2026/2027 MOA Step 2 (Hub Blueprint design)<br/>
+  Built for the 3Wi PMO SaaS · All figures shown are realistic placeholder data, not live.<br/>
+  © 2026 Hempire EC NPC · For internal review and stakeholder presentation only
+</footer>
+
+<!-- ============================================================
+     TopKpi pre-render (small inline-rendered component)
+     ============================================================ -->
+<script>
+// Replace <TopKpi /> tags before JS execution (simple direct DOM replace)
+document.querySelectorAll('TopKpi').forEach(t => {
+  const label = t.getAttribute('label') || '';
+  const value = t.getAttribute('value') || '';
+  const sub   = t.getAttribute('sub') || '';
+  const isAlert = t.getAttribute('alert') === 'true';
+  const div = document.createElement('div');
+  div.className = 'bg-white/10 backdrop-blur rounded-xl p-3 border border-white/20';
+  div.innerHTML = `
+    <div class="text-[10px] font-semibold uppercase tracking-widest text-emerald-100 mb-1">${label}</div>
+    <div class="text-2xl font-bold ${isAlert ? 'text-yellow-200' : 'text-white'}">${value}</div>
+    <div class="text-xs ${isAlert ? 'text-yellow-200' : 'text-emerald-100'} mt-0.5">${sub}</div>
+  `;
+  t.parentNode.replaceChild(div, t);
+});
+</script>
+
+<!-- ============================================================
+     LENS DATA + RENDERER
+     ============================================================ -->
+<script>
+const el = (tag, props={}, children=[]) => {
+  const e = document.createElement(tag);
+  Object.entries(props).forEach(([k,v]) => {
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v === true) e.setAttribute(k,'');
+    else if (v !== false && v !== null && v !== undefined) e.setAttribute(k,v);
+  });
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c == null) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+};
+
+/* ─────────────── Reusable cards ─────────────── */
+function kpiCard(label, value, sub, opts={}) {
+  const accent = opts.accent || '#0f172a';
+  const trend = opts.trend; // 'up' | 'down' | 'flat'
+  const trendCls = trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-rose-600' : 'text-slate-500';
+  const arrow = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
+  return el('div', { class: 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm' }, [
+    el('div', { class: 'text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-1' }, [label]),
+    el('div', { class: 'text-2xl font-bold', style: `color: ${accent}` }, [value]),
+    sub ? el('div', { class: `text-xs mt-1 ${trend ? trendCls : 'text-slate-500'}` }, [trend ? `${arrow} ${sub}` : sub]) : null,
+  ]);
+}
+
+function panelCard(title, body, opts={}) {
+  return el('section', { class: 'bg-white border border-slate-200 rounded-xl shadow-sm' }, [
+    el('header', { class: 'px-5 py-3 border-b border-slate-100 flex items-center justify-between' }, [
+      el('h3', { class: 'text-sm font-bold text-slate-900' }, [title]),
+      opts.right ? el('span', { class: 'text-xs text-slate-500 font-mono' }, [opts.right]) : null,
+    ]),
+    el('div', { class: 'p-5' }, [body]),
+  ]);
+}
+
+function bar(label, value, max, color='#015807') {
+  const pct = Math.max(0, Math.min(100, Math.round((value/max)*100)));
+  return el('div', { class: 'mb-2' }, [
+    el('div', { class: 'flex justify-between text-xs mb-1' }, [
+      el('span', { class: 'font-medium text-slate-700' }, [label]),
+      el('span', { class: 'font-mono text-slate-500' }, [`${value} / ${max} · ${pct}%`]),
+    ]),
+    el('div', { class: 'h-2 bg-slate-100 rounded-full overflow-hidden' }, [
+      el('div', { class: 'h-full rounded-full', style: `width:${pct}%; background:${color}` }),
+    ]),
+  ]);
+}
+
+function alertRow(level, what, when) {
+  const color = level === 'red' ? 'bg-rose-100 text-rose-800' : level === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700';
+  return el('div', { class: 'flex items-center justify-between gap-3 py-1.5 border-t border-slate-100 first:border-t-0' }, [
+    el('div', { class: 'flex items-center gap-2 min-w-0' }, [
+      el('span', { class: `text-[10px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0 ${color}` }, [level]),
+      el('span', { class: 'text-sm truncate' }, [what]),
+    ]),
+    el('span', { class: 'text-xs font-mono text-slate-500 shrink-0' }, [when]),
+  ]);
+}
+
+function tableSimple(headers, rows) {
+  const thead = el('thead', { class: 'text-xs text-slate-500 uppercase tracking-wider' }, [
+    el('tr', {}, headers.map(h => el('th', { class: 'text-left py-1 px-2' }, [h]))),
+  ]);
+  const tbody = el('tbody', {}, rows.map(r => el('tr', { class: 'border-t border-slate-100' },
+    r.map(c => el('td', { class: 'py-1.5 px-2 text-sm' }, [typeof c === 'string' ? c : c]))
+  )));
+  return el('table', { class: 'w-full text-sm' }, [thead, tbody]);
+}
+
+function chartCanvas(id, height='180') {
+  return el('div', { style: `height:${height}px;position:relative;` }, [
+    el('canvas', { id, style: 'max-height:100%' }),
+  ]);
+}
+
+/* ─────────────── OPERATIONS LENS ─────────────── */
+function renderOps() {
+  const root = el('div', { class: 'space-y-4' });
+
+  // Universal KPI row
+  root.appendChild(el('div', { class: 'grid grid-cols-2 md:grid-cols-4 gap-3' }, [
+    kpiCard('Drying line OEE',    '76%',   'Target 75%',                           { accent: '#015807', trend: 'up' }),
+    kpiCard('Avg. wait at intake','12 min', '↓ 4 min vs last week',                { accent: '#015807', trend: 'up' }),
+    kpiCard('Stock turnover',     '14 days','Stable',                              { accent: '#0f172a', trend: 'flat' }),
+    kpiCard('Power uptime',       '99.2%',  'Backup generator tested 28 May',     { accent: '#015807', trend: 'up' }),
+  ]));
+
+  // Charts row
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Weekly throughput (last 8 weeks)', chartCanvas('opsThroughput', '220'),
+      { right: 'kg per week' }),
+    panelCard('Hub capacity utilisation by line', chartCanvas('opsUtil', '220'),
+      { right: 'snapshot' }),
+  ]));
+
+  // Alerts + workforce
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Open alerts', el('div', {}, [
+      alertRow('red',   'Bag-printer ink levels critical', '29 May 14:02'),
+      alertRow('amber', 'Cold-room temp drifted +2°C overnight', '29 May 06:10'),
+      alertRow('amber', 'Farmer #11 delivery overdue by 2 days', '28 May'),
+    ]), { right: '3 open' }),
+    panelCard('Hub workforce + equipment', el('div', { class: 'space-y-2' }, [
+      bar('On-shift staff',         8,  10, '#015807'),
+      bar('Drying tunnels in use',  3,  4,  '#015807'),
+      bar('Pack-house bays in use', 2,  3,  '#0E7490'),
+      bar('Cold storage occupancy', 1.8, 3, '#0E7490'),
+      bar('Forklifts available',    2,  2,  '#B45309'),
+    ])),
+  ]));
+
+  return root;
+}
+
+/* ─────────────── FARMER LENS ─────────────── */
+function renderFarmer() {
+  const root = el('div', { class: 'space-y-4' });
+
+  root.appendChild(el('div', { class: 'grid grid-cols-2 md:grid-cols-4 gap-3' }, [
+    kpiCard('Active farmers',      '28 / 32',  '87.5% participation',                { accent: '#015807', trend: 'up' }),
+    kpiCard('Avg. delivery weight','102 kg',   'Up from 89 kg last week',             { accent: '#015807', trend: 'up' }),
+    kpiCard('Payments outstanding','R 47 320', '7-day average to pay',                 { accent: '#0f172a' }),
+    kpiCard('Training sessions',   '3',        'This month · 87 attendees',           { accent: '#015807', trend: 'up' }),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Deliveries per week (last 8 weeks)', chartCanvas('farmerDeliveries','220'),
+      { right: '# deliveries' }),
+    panelCard('Top 5 farmers by YTD volume', tableSimple(
+      ['Rank','Farmer','District','YTD kg'],
+      [
+        ['1','Madumane Buyile','Amathole','1 240'],
+        ['2','Mqina Simfumene','OR Tambo','1 105'],
+        ['3','Mfono Thembani','Joe Gqabi','980'],
+        ['4','Mandleni-Voyi Mandisa','Amathole','870'],
+        ['5','Qabaka Bonani Sive','Chris Hani','760'],
+      ]
+    )),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Payment cycle status', el('div', { class: 'space-y-2' }, [
+      bar('Paid this week',     22, 28, '#015807'),
+      bar('Processing',         4,  28, '#0E7490'),
+      bar('Pending verification', 2, 28, '#B45309'),
+    ])),
+    panelCard('Inputs distributed this month', el('div', {}, [
+      tableSimple(
+        ['Input', 'Farmers served', 'Units'],
+        [
+          ['Certified seedlings', '15', '8 400'],
+          ['Fertiliser (NPK)',    '22', '3 200 kg'],
+          ['Pest control kits',   '18', '54 kits'],
+          ['Irrigation pipe (HDPE)','7', '480 m'],
+        ]
+      ),
+    ])),
+  ]));
+
+  root.appendChild(panelCard('Farmer NPS (rolling 30 days)', el('div', { class: 'flex items-center gap-6' }, [
+    el('div', {}, [
+      el('div', { class: 'text-5xl font-bold text-emerald-700' }, ['+62']),
+      el('div', { class: 'text-xs text-slate-500 mt-1' }, ['Net Promoter Score · 24 respondents']),
+    ]),
+    el('div', { class: 'flex-1' }, [
+      bar('Promoters',  16, 24, '#015807'),
+      bar('Passives',    5, 24, '#94a3b8'),
+      bar('Detractors',  3, 24, '#dc2626'),
+    ]),
+  ])));
+
+  return root;
+}
+
+/* ─────────────── ECRDA LENS ─────────────── */
+function renderEcrda() {
+  const root = el('div', { class: 'space-y-4' });
+
+  root.appendChild(el('div', { class: 'grid grid-cols-2 md:grid-cols-4 gap-3' }, [
+    kpiCard('Grant deployed',  'R 384 250', '/ R 536 590 P1 envelope (71%)', { accent: '#0E7490', trend: 'up' }),
+    kpiCard('Hectares activated','38.6 ha', '/ 48.9 ha funded (79%)',         { accent: '#0E7490', trend: 'up' }),
+    kpiCard('Cost per Ha',     'R 9 956',   '14% below benchmark',            { accent: '#015807', trend: 'down' }),
+    kpiCard('GACP compliance', '93%',       '26 of 28 farmers audit-ready',   { accent: '#015807', trend: 'up' }),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Grant deployment vs envelope (cumulative)', chartCanvas('ecrdaGrant','220'),
+      { right: 'R thousand' }),
+    panelCard('Programme milestones', el('div', { class: 'space-y-2' }, [
+      bar('M1 — Seedling delivery',     46, 46, '#015807'),
+      bar('M2 — Planting verification', 42, 46, '#015807'),
+      bar('M3 — Mid-season inspection', 28, 46, '#0E7490'),
+      bar('M4 — Harvest readiness',      6, 46, '#B45309'),
+      bar('M5 — Final disbursement',     0, 46, '#dc2626'),
+    ])),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('M&E indicators (YTD)', tableSimple(
+      ['Indicator','Target','Actual','Status'],
+      [
+        ['Farmers enrolled','46','46','✓'],
+        ['Active farmers','46','28','At risk'],
+        ['Hectares activated','48.9','38.6','On track'],
+        ['Jobs created (FTE-equiv)','50','42','On track'],
+        ['Training days delivered','120','87','Behind'],
+        ['Women participation %','40','46%','Exceeded'],
+        ['Youth participation %','30','22%','Behind'],
+      ]
+    )),
+    panelCard('Risk register snapshot', el('div', {}, [
+      alertRow('red',   'M5 disbursement at risk — banking gaps on 11 farmers', 'Open'),
+      alertRow('amber', 'Youth participation below 30% target',                  'Open'),
+      alertRow('amber', 'Drought outlook for OR Tambo Q3',                       'Monitor'),
+      alertRow('green', 'Audit-ready file for ECRDA closure',                    'On track'),
+    ]), { right: '4 in register' }),
+  ]));
+
+  return root;
+}
+
+/* ─────────────── SEDFA LENS ─────────────── */
+function renderSedfa() {
+  const root = el('div', { class: 'space-y-4' });
+
+  root.appendChild(el('div', { class: 'grid grid-cols-2 md:grid-cols-4 gap-3' }, [
+    kpiCard('Hub revenue (YTD)',     'R 1.42 m', '↑ 18% vs forecast',     { accent: '#B45309', trend: 'up' }),
+    kpiCard('Operating margin',      '14.2%',    'Target 12%',             { accent: '#B45309', trend: 'up' }),
+    kpiCard('Working capital',       'R 312 k',  'DSO 28 days · DPO 35',   { accent: '#0f172a' }),
+    kpiCard('Path-to-independence',  '42%',      'Revenue vs grant ratio', { accent: '#B45309', trend: 'up' }),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Revenue mix (last 6 months)', chartCanvas('sedfaRevMix','220'),
+      { right: 'R thousand' }),
+    panelCard('SMME growth metrics (YTD)', tableSimple(
+      ['Metric','Year start','Now','Δ'],
+      [
+        ['Annual turnover (run-rate)', 'R 0', 'R 2.84 m', '+R 2.84 m'],
+        ['Employees (FTE)',            '4',   '12',       '+8'],
+        ['Active supplier farmers',    '0',   '28',       '+28'],
+        ['Equipment register value',   'R 480 k', 'R 1.15 m', '+R 670 k'],
+        ['SARS tax compliance',        'No',   'Yes',      '✓'],
+      ]
+    )),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Credit pipeline', el('div', { class: 'space-y-2' }, [
+      bar('Working capital facility — applied',  150, 250, '#B45309'),
+      bar('Equipment finance — pending',         350, 500, '#0E7490'),
+      bar('Cold storage upgrade — concept',        0, 800, '#94a3b8'),
+    ]), { right: 'R thousand' }),
+    panelCard('Financial sustainability score', el('div', { class: 'flex items-center gap-6' }, [
+      el('div', {}, [
+        el('div', { class: 'text-5xl font-bold text-amber-700' }, ['B+']),
+        el('div', { class: 'text-xs text-slate-500 mt-1' }, ['SEDFA SMME composite score']),
+      ]),
+      el('div', { class: 'flex-1' }, [
+        bar('Profitability',  72, 100, '#B45309'),
+        bar('Liquidity',      68, 100, '#B45309'),
+        bar('Solvency',       81, 100, '#015807'),
+        bar('Growth',         88, 100, '#015807'),
+        bar('Governance',     76, 100, '#0E7490'),
+      ]),
+    ])),
+  ]));
+
+  return root;
+}
+
+/* ─────────────── OFFTAKER LENS ─────────────── */
+function renderOfftaker() {
+  const root = el('div', { class: 'space-y-4' });
+
+  root.appendChild(el('div', { class: 'grid grid-cols-2 md:grid-cols-4 gap-3' }, [
+    kpiCard('Stock available',     '9.6 t',   'across 4 SKUs',           { accent: '#7C3AED' }),
+    kpiCard('Forecast next 30 days','5.2 t',  'Within +/- 8% confidence',{ accent: '#7C3AED', trend: 'up' }),
+    kpiCard('Lead time to dispatch','3 days', 'Target ≤ 5 days',          { accent: '#015807', trend: 'down' }),
+    kpiCard('Traceability rate',    '100%',   'All batches have full trail',{ accent: '#015807' }),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Stock by product category', chartCanvas('offStock','220'),
+      { right: 'kg on hand' }),
+    panelCard('Contracted vs delivered (this season)', el('div', { class: 'space-y-2' }, [
+      bar('Dried flower (CBD/CBG)', 4200, 6000, '#7C3AED'),
+      bar('Seed / grain',           1800, 2500, '#7C3AED'),
+      bar('Bast fibre',             1100, 2000, '#0E7490'),
+      bar('Hurd',                   2500, 4000, '#B45309'),
+    ]), { right: 'kg' }),
+  ]));
+
+  root.appendChild(el('div', { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4' }, [
+    panelCard('Quality grade distribution', tableSimple(
+      ['Product','Grade A','Grade B','Reject'],
+      [
+        ['Dried flower (CBD)','68%','27%','5%'],
+        ['Seed / grain','81%','17%','2%'],
+        ['Bast fibre','54%','38%','8%'],
+        ['Hurd','77%','21%','2%'],
+      ]
+    )),
+    panelCard('Active offtaker contracts', tableSimple(
+      ['Offtaker','Product','Vol / season','Price (R)'],
+      [
+        ['Medigrow Health','CBD biomass','3 000 kg','85 / kg'],
+        ['Intsangu Extraction','CBD biomass','2 500 kg','82 / kg'],
+        ['Hemporium','Bast fibre','1 800 kg','14 800 / t'],
+        ['House of Hemp','Hurd','3 500 kg','3 200 / t'],
+      ]
+    )),
+  ]));
+
+  root.appendChild(panelCard('Recent offtaker feedback', el('div', { class: 'space-y-3 text-sm' }, [
+    el('blockquote', { class: 'border-l-2 border-emerald-500 pl-3 italic text-slate-700' }, [
+      '"Consistent CBD content (8.4% avg) and traceability is genuinely better than what we get from KZN suppliers." — Medigrow QC team · 27 May'
+    ]),
+    el('blockquote', { class: 'border-l-2 border-amber-500 pl-3 italic text-slate-700' }, [
+      '"Bast fibre length variability needs work — we can use it but it slows our line." — Hemporium ops · 22 May'
+    ]),
+  ])));
+
+  return root;
+}
+
+/* ─────────────── Lens dispatch + chart setup ─────────────── */
+const renderers = {
+  ops:      renderOps,
+  farmer:   renderFarmer,
+  ecrda:    renderEcrda,
+  sedfa:    renderSedfa,
+  offtaker: renderOfftaker,
+};
+
+const lensRoot = document.getElementById('lensRoot');
+const tabs = document.querySelectorAll('.lens-tab');
+let chartInstances = [];
+
+function destroyCharts() {
+  chartInstances.forEach(c => c.destroy && c.destroy());
+  chartInstances = [];
+}
+
+function show(lens) {
+  destroyCharts();
+  lensRoot.innerHTML = '';
+  lensRoot.appendChild(renderers[lens]());
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.lens === lens));
+  setTimeout(() => buildCharts(lens), 50);
+}
+
+function buildCharts(lens) {
+  const grid = (color) => ({ display: false });
+  const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}, scales: { x: { ticks: { font: { size: 10 }}, grid }, y: { ticks: { font: { size: 10 }}, grid: { color: '#f1f5f9' }}}};
+
+  if (lens === 'ops') {
+    const c1 = document.getElementById('opsThroughput');
+    if (c1) chartInstances.push(new Chart(c1, {
+      type: 'line',
+      data: {
+        labels: ['W15','W16','W17','W18','W19','W20','W21','W22'],
+        datasets: [{
+          data: [1600, 1820, 1740, 2100, 2380, 2210, 2540, 2840],
+          borderColor: '#015807', backgroundColor: 'rgba(1,88,7,0.1)',
+          fill: true, tension: 0.35, pointRadius: 3, pointBackgroundColor: '#015807',
+        }]
+      },
+      options: common,
+    }));
+
+    const c2 = document.getElementById('opsUtil');
+    if (c2) chartInstances.push(new Chart(c2, {
+      type: 'bar',
+      data: {
+        labels: ['Drying','Pack-house','Cold storage','Dispatch','Office'],
+        datasets: [{
+          data: [76, 67, 60, 42, 30],
+          backgroundColor: ['#015807','#0E7490','#0E7490','#B45309','#94a3b8'],
+        }]
+      },
+      options: { ...common, scales: { ...common.scales, y: { ...common.scales.y, max: 100, ticks: { ...common.scales.y.ticks, callback: v => v + '%' }}}},
+    }));
+  }
+
+  if (lens === 'farmer') {
+    const c = document.getElementById('farmerDeliveries');
+    if (c) chartInstances.push(new Chart(c, {
+      type: 'bar',
+      data: {
+        labels: ['W15','W16','W17','W18','W19','W20','W21','W22'],
+        datasets: [{
+          data: [12, 15, 14, 18, 21, 19, 23, 28],
+          backgroundColor: '#015807',
+        }]
+      },
+      options: common,
+    }));
+  }
+
+  if (lens === 'ecrda') {
+    const c = document.getElementById('ecrdaGrant');
+    if (c) chartInstances.push(new Chart(c, {
+      type: 'line',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May'],
+        datasets: [
+          {
+            label: 'Deployed',
+            data: [40, 110, 195, 290, 384],
+            borderColor: '#0E7490', backgroundColor: 'rgba(14,116,144,0.12)',
+            fill: true, tension: 0.3, pointRadius: 3,
+          },
+          {
+            label: 'Envelope ceiling',
+            data: [536, 536, 536, 536, 536],
+            borderColor: '#dc2626', borderDash: [4,4],
+            pointRadius: 0, fill: false,
+          },
+        ]
+      },
+      options: { ...common, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 10 }}}}},
+    }));
+  }
+
+  if (lens === 'sedfa') {
+    const c = document.getElementById('sedfaRevMix');
+    if (c) chartInstances.push(new Chart(c, {
+      type: 'bar',
+      data: {
+        labels: ['Dec','Jan','Feb','Mar','Apr','May'],
+        datasets: [
+          { label: 'Offtaker sales',  data: [80, 120, 180, 240, 290, 340], backgroundColor: '#B45309', stack: 'a' },
+          { label: 'Processing fees', data: [10, 15, 18, 24, 28, 32], backgroundColor: '#0E7490', stack: 'a' },
+          { label: 'Grants',          data: [40, 60, 70, 90, 100, 80], backgroundColor: '#94a3b8', stack: 'a' },
+        ]
+      },
+      options: { ...common, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 10 }}}}, scales: { ...common.scales, x: { ...common.scales.x, stacked: true }, y: { ...common.scales.y, stacked: true }}},
+    }));
+  }
+
+  if (lens === 'offtaker') {
+    const c = document.getElementById('offStock');
+    if (c) chartInstances.push(new Chart(c, {
+      type: 'doughnut',
+      data: {
+        labels: ['Dried flower (CBD)','Seed / grain','Bast fibre','Hurd'],
+        datasets: [{
+          data: [4200, 1800, 1100, 2500],
+          backgroundColor: ['#7C3AED','#0E7490','#B45309','#015807'],
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }}}}},
+    }));
+  }
+}
+
+tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.lens)));
+show('ops');
+</script>
+</body>
+</html>

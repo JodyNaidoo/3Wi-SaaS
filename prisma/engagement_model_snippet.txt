@@ -1,0 +1,58 @@
+// =============================================================================
+// 0006 ENGAGEMENTS — paste into prisma/schema.prisma
+// =============================================================================
+// 1. Add the enum + model below at the end of the file.
+// 2. Add ONE relation line into the existing Tenant model:
+//      engagements   Engagement[]
+//    Put it next to the other relations (clients, projects, growers, etc.)
+// 3. Run: npm run prisma:generate (from apps/api)
+// =============================================================================
+
+enum EngagementStatus {
+  requested
+  accepted
+  in_progress
+  delivered
+  closed
+  cancelled
+}
+
+model Engagement {
+  id                  String           @id @default(uuid()) @db.Uuid
+  tenantId            String           @map("tenant_id") @db.Uuid
+  tenant              Tenant           @relation(fields: [tenantId], references: [id])
+
+  serviceUnit         String           @map("service_unit")     // "knockout-marketing"
+  serviceSlug         String           @map("service_slug")     // "brand-development"
+  serviceName         String           @map("service_name")     // "Brand Development"
+
+  clientName          String           @map("client_name")
+  clientCompany       String?          @map("client_company")
+  clientEmail         String           @map("client_email")
+  clientPhone         String?          @map("client_phone")
+
+  scopeSummary        String?          @map("scope_summary")
+  scopeChoices        Json?            @map("scope_choices")
+  budgetIndication    String?          @map("budget_indication")
+  desiredStartDate    DateTime?        @map("desired_start_date") @db.Date
+  notes               String?
+
+  status              EngagementStatus @default(requested)
+  requestedAt         DateTime         @default(now()) @map("requested_at")
+  acceptedAt          DateTime?        @map("accepted_at")
+  deliveredAt         DateTime?        @map("delivered_at")
+  closedAt            DateTime?        @map("closed_at")
+
+  scopeDocUrl         String?          @map("scope_doc_url")
+  depositInvoiceRef   String?          @map("deposit_invoice_ref")
+  asanaProjectId      String?          @map("asana_project_id")
+
+  createdByUserId     String?          @map("created_by_user_id") @db.Uuid
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@index([tenantId, serviceUnit, serviceSlug])
+  @@index([createdAt(sort: Desc)])
+  @@map("engagements")
+}
