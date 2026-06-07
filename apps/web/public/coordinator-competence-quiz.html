@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3Wi Coordinator Competence Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--brown:#3F1101;--green:#015807;--yellow:#FDF31C;--bg:#F7F4EF;--bd:#E5DFD7;--red:#B00020}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Roboto',sans-serif;background:var(--bg);color:#222;line-height:1.5;min-height:100vh}
+.wrap{max-width:780px;margin:0 auto;padding:24px}
+header{text-align:center;padding:32px 0 24px;border-bottom:3px solid var(--brown);margin-bottom:32px}
+header h1{font-family:'Ubuntu',sans-serif;color:var(--brown);font-size:28px;margin-bottom:8px}
+header p{color:#555;font-size:14px}
+.bar{background:var(--bd);height:8px;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.fill{background:var(--green);height:100%;width:0%;transition:width .3s}
+.pt{font-size:13px;color:#666;text-align:center;margin-bottom:24px}
+.card{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:28px;margin-bottom:16px}
+.tag{display:inline-block;background:var(--yellow);color:var(--brown);font-family:'Ubuntu',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.scen{font-size:17px;color:#1a1a1a;margin-bottom:20px;font-weight:500}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--bg);border:2px solid var(--bd);border-radius:6px;padding:14px 16px;cursor:pointer;font:14px 'Roboto',sans-serif;color:#222;text-align:left}
+.opt:hover{border-color:var(--brown);background:#fff}
+.opt.sel{border-color:var(--brown);background:#fff;font-weight:500}
+.opt.right{border-color:var(--green);background:#E8F5E9;color:#1B5E20}
+.opt.wrong{border-color:var(--red);background:#FFEBEE;color:#7F0000}
+.fb{margin-top:16px;padding:14px 16px;border-radius:6px;background:var(--bg);border-left:4px solid var(--brown);font-size:14px;display:none}
+.fb.show{display:block}
+.fb.r{border-left-color:var(--green);background:#E8F5E9}
+.fb.w{border-left-color:var(--red);background:#FFEBEE}
+.fb b{display:block;margin-bottom:6px;font-family:'Ubuntu',sans-serif}
+.ctl{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.btn{font-family:'Ubuntu',sans-serif;font-weight:500;background:var(--brown);color:#fff;border:0;padding:12px 28px;border-radius:4px;cursor:pointer;font-size:15px}
+.btn.g{background:var(--green)}
+.btn.ghost{background:transparent;color:var(--brown);border:1px solid var(--brown)}
+.btn:hover{opacity:.85}
+.hide{display:none!important}
+.score{text-align:center;padding:24px 0}
+.score .n{font-family:'Ubuntu',sans-serif;font-size:64px;font-weight:700;color:var(--brown);line-height:1}
+.score .f{font-size:24px;color:#666}
+.score .p{font-family:'Ubuntu',sans-serif;font-size:32px;color:var(--brown);margin-top:8px}
+.v{text-align:center;margin:24px 0;padding:16px;border-radius:6px;font-size:16px}
+.v.p{background:#E8F5E9;color:#1B5E20;border:2px solid var(--green)}
+.v.b{background:#FFF3E0;color:#8A4B00;border:2px solid #FF6F00}
+.v.f{background:#FFEBEE;color:#7F0000;border:2px solid var(--red)}
+.v b{font-family:'Ubuntu',sans-serif;font-size:20px;display:block;margin-bottom:8px}
+.rv{margin-top:32px}
+.rv h3{font-family:'Ubuntu',sans-serif;color:var(--brown);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--bd)}
+.ri{padding:14px 0;border-bottom:1px solid var(--bd)}
+.ri:last-child{border-bottom:0}
+.rq{font-weight:500;margin-bottom:6px;font-size:14px}
+.rs{font-size:12px;font-family:'Ubuntu',sans-serif;text-transform:uppercase}
+.rs.r{color:var(--green)}.rs.w{color:var(--red)}
+.rd{font-size:13px;color:#666;margin-top:4px}
+footer{text-align:center;padding:32px 0;color:#888;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>3Wi Coordinator Competence Quiz</h1>
+  <p>Scenario-based assessment - 12 questions - ~20 minutes - pass mark 10/12</p>
+</header>
+<div id="intro" class="card">
+  <span class="tag">Before you start</span>
+  <p style="margin-bottom:16px">This quiz tests your understanding of the 3Wi Engagement Master Process and your readiness to start the 12-week coordinator apprenticeship.</p>
+  <p style="margin-bottom:8px"><b>What you will be tested on:</b></p>
+  <ul style="margin-left:20px;margin-bottom:16px;color:#444;font-size:14px">
+    <li>The 4-phase engagement workflow (Discovery, Proposal, Contracting, Execution)</li>
+    <li>Decision trees for go/no-go, pricing tiers, escalation triage, report quality</li>
+    <li>How to work with AI agents (verification, trust levels, escalation patterns)</li>
+    <li>When to handle things yourself vs flag for Jody</li>
+  </ul>
+  <p style="margin-bottom:16px"><b>Format:</b> Multiple choice. Pick the BEST answer. Immediate feedback after each.</p>
+  <p style="margin-bottom:16px"><b>Honest scoring:</b> Treat this like the real thing. The point is to find your gaps, not cheat them.</p>
+  <div class="ctl"><div></div><button id="btn-start" class="btn g">Start the quiz &rarr;</button></div>
+</div>
+<div id="prog" class="hide">
+  <div class="bar"><div class="fill" id="fill"></div></div>
+  <div class="pt" id="pt">Question 1 of 12</div>
+</div>
+<div id="qa" class="hide"></div>
+<div id="res" class="hide"></div>
+<footer><p>3Wi Coordinator Academy - v1 - 2026<br>Take this quiz before starting the apprenticeship.</p></footer>
+</div><script>
+var Q = [
+{m:"Module 1 - Operating Model",s:"An AI agent generates a financial report for a client. Some figures look unexpectedly high. What do you do?",o:["Send it - agents are reliable; trust the output","Spot-check at least 3 figures against the source data. If they don't match, escalate to Jody","Re-run the agent and hope for different output","Edit the numbers down to what you think is realistic"],c:1,e:"Client-facing financial content is LOW trust level. Always verify at least 3 figures against source. If they don't match, escalate - never edit unilaterally and never fabricate."},
+{m:"Module 1 - Operating Model",s:"A client emails asking for Jody to attend a meeting tomorrow. Jody is fully booked. What do you do?",o:["Tell the client Jody isn't available - full stop","Forward the email to Jody and wait for his response before replying","Acknowledge within 4 hours. Propose alternatives (you attend + recorded debrief OR reschedule). CC Jody on your response","Offer yourself as a substitute and tell the client Jody will join the next one"],c:2,e:"Coordinator handles routine client communication within a 4-hour SLA, always CC'ing Jody so he stays in the loop. Don't unilaterally substitute or stall waiting for Jody."},
+{m:"Module 2 - Discovery (Go/No-Go)",s:"An inbound enquiry: 'Can you help us migrate our IT systems to the cloud?' Our 6 functional units are Marketing, Accounting, Capital, Training, HR, Maintenance, and IBS Strategy. What do you do?",o:["Accept the engagement - we will figure it out as we go","Decline politely. Refer to an external IT partner if we have one. Log as a lost lead in CRM","Try to fit it under our Maintenance Co unit","Escalate to Jody to decide"],c:1,e:"Phase 1 Discovery Q1: If the problem isn't in our wheelhouse, decline politely. Don't escalate unnecessarily - the decision tree gave you the answer."},
+{m:"Module 2 - Proposal (Tier Selection)",s:"A reputable mid-sized client signals long-term horizon and wants ongoing strategic support across multiple workstreams. Implied budget is R 60k/month. Which tier?",o:["Tier C (Tactical Sprint) - start small","Tier B (Fixed Engagement) - define a clear scope and lock the fee","Tier A (Strategic Partner) - retainer + outcome share with 12-month minimum","Decline - R 60k/month is below our threshold"],c:2,e:"Stepping-stone client + multi-year horizon + R 60k/month = Tier A. Escalate to Jody to lead proposal. R 60k/month x 12 = R 720k/year, well above Tier A minimum."},
+{m:"Module 2 - Contracting (Sign Authority)",s:"A new Tier B client wants to sign a R 300k engagement. Jody is on a 5-day strategy retreat with limited phone access. What do you do?",o:["Sign on Jody's behalf - he authorised similar in the past","Wait the full 5 days - risk losing the client if needed","Explain timeline to client; offer to lock terms today with formal signing within 7 days; flag for Jody to do an emergency call if client objects","Issue a smaller R 100k engagement so you can sign without Jody"],c:2,e:"R 100k-R 500k requires Jody to sign in person. Don't sign on his behalf, don't fragment the engagement to dodge authority, don't lose the client. Be honest about timeline + flag for an emergency call if needed."},
+{m:"Module 2 - Inception (Report Quality)",s:"You have drafted the inception report. Two sections are blank because the client hasn't sent the data yet. PSC meeting is tomorrow at 9am. What do you do?",o:["Send the report as-is - they will see the blanks themselves","Make up reasonable-looking data so the report looks complete","Send with the blank sections explicitly marked 'TBD - client to provide by [date]' + flag missing inputs in the meeting agenda","Cancel tomorrow's PSC meeting until the data arrives"],c:2,e:"Inception Gate 1: missing sections must be explicitly marked TBD with a clear deadline. Never fabricate. Never cancel high-stakes meetings unilaterally - flag the gap in the agenda so it's addressed."},
+{m:"Module 2 - Coordination (Escalation Triage)",s:"A client director is threatening to cancel the engagement because a deliverable was a day late. What do you do?",o:["Apologise once via email and move on - it is only a day","ESCALATE to Jody immediately - this is client relationship + reputational risk","Unilaterally offer a discount on the next milestone to placate them","Defend yourself by explaining why the delay happened"],c:1,e:"Client threat to cancel = reputational + relationship + political. ESCALATE TO JODY IMMEDIATELY (within 2 hours). Don't apologise alone, don't offer discounts without authority, don't get defensive."},
+{m:"Module 2 - Reporting (Publish vs Hold)",s:"The AI agent generated this month's report. The headline metric (revenue or grant utilisation) looks 30% higher than expected. What do you do?",o:["Send it - higher is good news for the client","Send but add 'this looks unusual' in the cover note","Hold. Spot-check the figure against source data. If confirmed, send with brief commentary explaining the swing. If it doesn't reconcile, escalate to Jody","Edit the number down to what you think is realistic"],c:2,e:"Phase 4.3 Gate 4: material changes always require verification before sending. Confirm against source. If real, send with commentary. If can't reconcile, escalate. Never edit a figure to suit expectations."},
+{m:"Module 3 - Agent Handoff",s:"An AI agent has produced a complete client-ready proposal. Client meeting is in 2 hours. What's your verification process?",o:["Skim for typos, then send","Re-run the agent twice to confirm consistency, then send","Verify named entities match source; check at least 3 figures; confirm tone matches our brand; confirm it matches the engagement scope","Send to the client; they will let us know if anything's wrong"],c:2,e:"Client-facing strategic content = LOW trust level. Full verification protocol: named entities, key figures, brand tone, scope alignment. Re-running doesn't fix factual errors."},
+{m:"Module 3 - Agent Handoff",s:"An AI agent says 'I don't have enough information to complete this section.' What do you do?",o:["Leave the section blank and move on","Provide the missing context from sources you can find; re-run the agent; if still stuck after 2 retries, flag for Jody","Make up plausible-sounding content to fill the gap","Skip this engagement and pick a different task"],c:1,e:"Standard agent-stuck procedure: supply the missing inputs, retry. After 2 failed retries, flag for Jody. Never fabricate to fill a gap."},
+{m:"Module 4 - Apprenticeship Behaviour",s:"You are in Week 5 of apprenticeship - running your first Tier C engagement solo. Mid-engagement, the client unexpectedly asks 'can you add a market analysis module to this work?' What do you do?",o:["Say yes - keep the client happy by adding the extra work","Say no without explanation","Acknowledge the request; explain that scope changes go through change-order; price the additional work; flag for Jody to review","Add it for free to strengthen the relationship"],c:2,e:"Scope creep ALWAYS handled via change-order. Never accept free expansion. Price the addition, flag for Jody."},
+{m:"Module 6 - Synthesis",s:"A new coordinator joining your team asks: 'When should I escalate to Jody?' What's the cleanest summary you can give?",o:["Whenever you are unsure of anything - better safe than sorry","When you have followed the decision tree but the answer is unclear, OR when the issue is strategic, political, financial, legal, or reputational","Only for very important things - Jody is busy and shouldn't be bothered","Whenever the client specifically asks for Jody"],c:1,e:"Best summary. Two triggers: (1) decision tree gave no clear answer, OR (2) issue type is in the 'always escalate' categories. Avoid both extremes - flood AND drought."}
+];var idx = 0, ans = [];
+function $(s){return document.querySelector(s)}
+function startQuiz(){
+  $('#intro').classList.add('hide');
+  $('#prog').classList.remove('hide');
+  $('#qa').classList.remove('hide');
+  render();
+}
+function render(){
+  var q = Q[idx];
+  var html = '<div class="card"><span class="tag">'+q.m+'</span><p class="scen">'+esc(q.s)+'</p><div class="opts">';
+  for (var i=0;i<q.o.length;i++){
+    html += '<button class="opt" data-i="'+i+'"><b>'+String.fromCharCode(65+i)+'.</b> '+esc(q.o[i])+'</button>';
+  }
+  html += '</div><div class="fb" id="fb"></div><div class="ctl"><div></div><button class="btn g hide" id="next">'+(idx===Q.length-1?'See results &rarr;':'Next question &rarr;')+'</button></div></div>';
+  $('#qa').innerHTML = html;
+  document.querySelectorAll('.opt').forEach(function(b){
+    b.addEventListener('click', function(){ pick(parseInt(b.dataset.i,10)); });
+  });
+  $('#next').addEventListener('click', next);
+  prog();
+}
+function pick(i){
+  if (ans[idx] !== undefined) return;
+  ans[idx] = i;
+  var q = Q[idx], right = i===q.c;
+  document.querySelectorAll('.opt').forEach(function(b,j){
+    b.disabled = true;
+    if (j===q.c) b.classList.add('right');
+    if (j===i && !right) b.classList.add('wrong');
+    if (j===i && right) b.classList.add('sel');
+  });
+  var fb = $('#fb');
+  fb.className = 'fb show '+(right?'r':'w');
+  fb.innerHTML = '<b>'+(right?'\u2713 Correct':'\u2717 Not quite - the correct answer is '+String.fromCharCode(65+q.c))+'</b>'+esc(q.e);
+  $('#next').classList.remove('hide');
+}
+function next(){
+  if (idx < Q.length-1){ idx++; render(); } else { results(); }
+}
+function prog(){
+  var pct = (idx/Q.length)*100;
+  $('#fill').style.width = pct+'%';
+  $('#pt').textContent = 'Question '+(idx+1)+' of '+Q.length;
+}
+function results(){
+  $('#fill').style.width = '100%';
+  $('#pt').textContent = 'Quiz complete';
+  $('#qa').classList.add('hide');
+  $('#res').classList.remove('hide');
+  var score = 0;
+  for (var i=0;i<ans.length;i++) if (ans[i]===Q[i].c) score++;
+  var pct = Math.round((score/Q.length)*100);
+  var vc, vt, vx;
+  if (score>=10){ vc='p'; vt='\u2713 Pass - Ready for Apprenticeship'; vx='Strong grasp of the Master Process and decision trees. Email this result to Jody to start the 12-week apprenticeship.'; }
+  else if (score>=8){ vc='b'; vt='~ Borderline - Review Then Retake'; vx='Good foundation but gaps. Review the Decision Trees module, then retake.'; }
+  else { vc='f'; vt='\u2717 Not Yet - Significant Gaps'; vx='Re-read Modules 1, 2, and 3 of the Coordinator Academy carefully. Retake when ready.'; }
+  var rv = '';
+  for (var i=0;i<Q.length;i++){
+    var q = Q[i], a = ans[i], r = a===q.c;
+    rv += '<div class="ri"><div class="rq">'+(i+1)+'. '+esc(q.s)+'</div><div class="rs '+(r?'r':'w')+'">'+(r?'\u2713 Correct':'\u2717 Wrong')+'</div>';
+    if (!r) rv += '<div class="rd"><b>Your answer:</b> '+esc(q.o[a])+'<br><b>Correct:</b> '+esc(q.o[q.c])+'<br><b>Why:</b> '+esc(q.e)+'</div>';
+    rv += '</div>';
+  }
+  var wrongs = [];
+  for (var i=0;i<Q.length;i++) if (ans[i]!==Q[i].c) wrongs.push('Q'+(i+1)+' ('+Q[i].m+'): chose "'+Q[i].o[ans[i]]+'" - correct was "'+Q[i].o[Q[i].c]+'"');
+  var body = encodeURIComponent('3Wi Coordinator Competence Quiz Result\n\nScore: '+score+'/'+Q.length+' ('+pct+'%)\nVerdict: '+vt+'\n\nDate taken: '+new Date().toLocaleString('en-ZA')+'\n\n---\nWrong answers:\n'+wrongs.join('\n')+'\n\n---\nPlease review and confirm whether to proceed to apprenticeship.');
+  var subj = encodeURIComponent('Coordinator Quiz Result - '+score+'/'+Q.length);
+  $('#res').innerHTML = '<div class="card"><div class="score"><div class="n">'+score+'<span class="f">/'+Q.length+'</span></div><div class="p">'+pct+'%</div></div><div class="v '+vc+'"><b>'+vt+'</b>'+vx+'</div><div class="ctl"><button class="btn ghost" id="retake">Retake quiz</button><a class="btn g" style="text-decoration:none" href="mailto:jodynaidoo@3wi.co.za?subject='+subj+'&body='+body+'">Email result to Jody</a></div><div class="rv"><h3>Review your answers</h3>'+rv+'</div></div>';
+  $('#retake').addEventListener('click', restart);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function restart(){
+  idx=0; ans=[];
+  $('#res').classList.add('hide');
+  $('#intro').classList.remove('hide');
+  $('#prog').classList.add('hide');
+  $('#fill').style.width='0%';
+  $('#pt').textContent='Question 1 of 12';
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+document.addEventListener('DOMContentLoaded', function(){
+  $('#btn-start').addEventListener('click', startQuiz);
+});
+</script>
+</body>
+</html>
