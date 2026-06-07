@@ -1,0 +1,155 @@
+﻿
+// =====================================================================
+// Workflow Templates + Instances (0012)
+// =====================================================================
+
+enum WorkflowInstanceStatus {
+  discovery
+  proposal
+  contracting
+  inception
+  execution
+  complete
+  cancelled
+  on_hold
+
+  @@map("workflow_instance_status")
+}
+
+enum WorkflowActivityStatus {
+  pending
+  in_progress
+  awaiting_review
+  complete
+  blocked
+  escalated
+  skipped
+
+  @@map("workflow_activity_status")
+}
+
+enum PricingTier {
+  A_strategic_partner
+  B_fixed_engagement
+  C_tactical_sprint
+
+  @@map("pricing_tier")
+}
+
+model WorkflowTemplate {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  name              String
+  slug              String
+  description       String?
+  version           String   @default("v1")
+  ownerUnitSlug     String?  @map("owner_unit_slug")
+  isActive          Boolean  @default(true) @map("is_active")
+  metadata          Json     @default("{}")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?  @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  phases    WorkflowTemplatePhase[]
+  instances WorkflowInstance[]
+
+  @@unique([tenantId, slug, version])
+  @@index([tenantId])
+  @@map("workflow_templates")
+}
+
+model WorkflowTemplatePhase {
+  id          String  @id @default(uuid()) @db.Uuid
+  templateId  String  @map("template_id") @db.Uuid
+  code        String
+  name        String
+  description String?
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  template   WorkflowTemplate           @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  activities WorkflowTemplateActivity[]
+
+  @@unique([templateId, code])
+  @@index([templateId])
+  @@map("workflow_template_phases")
+}
+
+model WorkflowTemplateActivity {
+  id                        String   @id @default(uuid()) @db.Uuid
+  phaseId                   String   @map("phase_id") @db.Uuid
+  name                      String
+  description               String?
+  sortOrder                 Int      @default(0) @map("sort_order")
+  responsibleRole           String?  @map("responsible_role")
+  accountableRole           String?  @map("accountable_role")
+  consultedRoles            String[] @map("consulted_roles")
+  informedRoles             String[] @map("informed_roles")
+  estHoursDirector          Decimal? @default(0) @map("est_hours_director") @db.Decimal(5,2)
+  estHoursCoordinator       Decimal? @default(0) @map("est_hours_coordinator") @db.Decimal(5,2)
+  estAgentRuns              Int      @default(0) @map("est_agent_runs")
+  outputArtifact            String?  @map("output_artifact")
+  aiAgentSlug               String?  @map("ai_agent_slug")
+  requiresDirectorSignoff   Boolean  @default(false) @map("requires_director_signoff")
+
+  phase              WorkflowTemplatePhase      @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  instanceActivities WorkflowInstanceActivity[]
+
+  @@index([phaseId])
+  @@map("workflow_template_activities")
+}
+
+model WorkflowInstance {
+  id                String      @id @default(uuid()) @db.Uuid
+  tenantId          String      @map("tenant_id") @db.Uuid
+  templateId        String      @map("template_id") @db.Uuid
+  customerId        String?     @map("customer_id") @db.Uuid
+  name              String
+  pricingTier       PricingTier? @map("pricing_tier")
+  status            WorkflowInstanceStatus @default(discovery)
+  currentPhaseCode  String?     @map("current_phase_code")
+  valueZar          Decimal?    @default(0) @map("value_zar") @db.Decimal(14,2)
+  startedAt         DateTime?   @map("started_at") @db.Timestamptz
+  dueAt             DateTime?   @map("due_at") @db.Timestamptz
+  completedAt       DateTime?   @map("completed_at") @db.Timestamptz
+  notes             String?
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?     @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime    @default(now()) @map("updated_at") @db.Timestamptz
+
+  template   WorkflowTemplate           @relation(fields: [templateId], references: [id])
+  customer   Customer?                  @relation(fields: [customerId], references: [id])
+  activities WorkflowInstanceActivity[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
+  @@map("workflow_instances")
+}
+
+model WorkflowInstanceActivity {
+  id                    String    @id @default(uuid()) @db.Uuid
+  instanceId            String    @map("instance_id") @db.Uuid
+  templateActivityId    String    @map("template_activity_id") @db.Uuid
+  assignedUserId        String?   @map("assigned_user_id") @db.Uuid
+  status                WorkflowActivityStatus @default(pending)
+  startedAt             DateTime? @map("started_at") @db.Timestamptz
+  dueAt                 DateTime? @map("due_at") @db.Timestamptz
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz
+  outputData            Json      @default("{}") @map("output_data")
+  notes                 String?
+  escalatedToDirector   Boolean   @default(false) @map("escalated_to_director")
+  escalationReason      String?   @map("escalation_reason")
+  directorSignedOff     Boolean   @default(false) @map("director_signed_off")
+  directorSignoffAt     DateTime? @map("director_signoff_at") @db.Timestamptz
+  directorSignoffBy     String?   @map("director_signoff_by") @db.Uuid
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  instance         WorkflowInstance         @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  templateActivity WorkflowTemplateActivity @relation(fields: [templateActivityId], references: [id])
+
+  @@index([instanceId])
+  @@index([assignedUserId])
+  @@index([status])
+  @@map("workflow_instance_activities")
+}

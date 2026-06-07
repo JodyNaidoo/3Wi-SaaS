@@ -1,4 +1,4 @@
-// 3Wi PMO Suite — Prisma schema
+﻿// 3Wi PMO Suite â€” Prisma schema
 // Multi-tenant. RLS enforced at Postgres level (see supabase/migrations/0002_rls.sql).
 // Every tenant-scoped table carries `tenantId` and is protected by RLS that compares it to
 // `current_setting('app.tenant_id')`. The API sets that GUC on every request via the
@@ -44,7 +44,7 @@ model Tenant {
   disbursements Disbursement[]
   signoffs      DisbursementSignoff[]
 
-  // 0005 — payment verification & sign-off
+  // 0005 â€” payment verification & sign-off
   releaseBatches        ReleaseBatch[]
   farmerSignoffs        FarmerSignoff[]
   verificationSignoffs  VerificationSignoff[]
@@ -57,8 +57,8 @@ model Tenant {
 
 // -------------------------------------------------------------------- Clients
 //
-// A `Client` is a CUSTOMER OF THE TENANT — distinct from the tenant itself.
-// Hierarchy:  3Wi (platform)  →  Tenant (e.g. IBS)  →  Client (e.g. Hempire-EC)  →  Project (e.g. Sunshines)
+// A `Client` is a CUSTOMER OF THE TENANT â€” distinct from the tenant itself.
+// Hierarchy:  3Wi (platform)  â†’  Tenant (e.g. IBS)  â†’  Client (e.g. Hempire-EC)  â†’  Project (e.g. Sunshines)
 // Each Tenant manages many Clients; each Client owns many Projects.
 // White-label brand colours can be set per-Client so the Client's projects render
 // in their brand (e.g. Sunshines users see Hempire colours).
@@ -97,8 +97,8 @@ model User {
   tenantId  String   @map("tenant_id") @db.Uuid
   email     String?  @unique
   phone     String?  @unique
-  pinHash   String?  @map("pin_hash") // bcrypt — farmers only
-  passwordHash String? @map("password_hash") // bcrypt — director / staff
+  pinHash   String?  @map("pin_hash") // bcrypt â€” farmers only
+  passwordHash String? @map("password_hash") // bcrypt â€” director / staff
   fullName  String   @map("full_name")
   role      String   // director | psc | farmer | technical | offtaker
   district  String?
@@ -429,8 +429,8 @@ model AuditLog {
 // -------------------------------------------------------------------- Parts
 //
 // A `Part` is a programme phase WITHIN a Project. Sunshines has two:
-//   Part 1 — Seedlings Cohort (lead funder ECRDA, 46 growers)
-//   Part 2 — DSBD Seed Cohort (lead funder DSBD)
+//   Part 1 â€” Seedlings Cohort (lead funder ECRDA, 46 growers)
+//   Part 2 â€” DSBD Seed Cohort (lead funder DSBD)
 // Each Part owns its own Deliverables and (for production parts) Growers
 // and Disbursements. Splitting a Project into Parts lets a single
 // management contract cover multiple funder cohorts with separate
@@ -466,7 +466,7 @@ model Part {
 
 // -------------------------------------------------------------------- Deliverables
 //
-// Higher-level unit than `Milestone` — a Deliverable (D1, D2, D3 ...) is
+// Higher-level unit than `Milestone` â€” a Deliverable (D1, D2, D3 ...) is
 // the contractually named output a funder pays against. The existing
 // Milestone model is retained for the lower-level G0..G5 gate audits;
 // a Deliverable can be backed by many Milestones.
@@ -578,7 +578,7 @@ model Disbursement {
   evidenceUrl        String?   @map("evidence_url")
   notes              String?
 
-  // 0005 — payment verification process state
+  // 0005 â€” payment verification process state
   // 10-state machine: Awaiting Beneficiary | Beneficiary-Accepted | Disputed |
   //   Calculation-Verified | Calculation-Rejected | Release-Authorised | On Hold |
   //   Payment Pending | Paid | Payment Failed
@@ -639,7 +639,7 @@ model DisbursementSignoff {
 }
 
 // ============================================================================
-// 0005 — Payment Verification & Sign-Off
+// 0005 â€” Payment Verification & Sign-Off
 // Four-gate disbursement governance per Hempire-EC NPC process design.
 // See:
 //   Sunshines_Inception_Section_Disbursement_Process.docx (operational design)
@@ -677,7 +677,7 @@ model ReleaseBatch {
 
 // --------------------------------------------------------------- FarmerSignoff
 //
-// Stage 2 — beneficiary self-verification + banking details + indemnity.
+// Stage 2 â€” beneficiary self-verification + banking details + indemnity.
 // Banking columns are encrypted at rest (AES-256-GCM) by the API layer.
 
 model FarmerSignoff {
@@ -715,7 +715,7 @@ model FarmerSignoff {
 
 // --------------------------------------------------------------- VerificationSignoff
 //
-// Stage 3 — calculation verification by named Technical Verifier (Mr Vuso).
+// Stage 3 â€” calculation verification by named Technical Verifier (Mr Vuso).
 // 2FA-enforced at the application layer.
 
 model VerificationSignoff {
@@ -749,7 +749,7 @@ model VerificationSignoff {
 
 // --------------------------------------------------------------- ReleaseSignoff
 //
-// Stage 4 — release authorisation by named Release Authoriser (Dr Blouw).
+// Stage 4 â€” release authorisation by named Release Authoriser (Dr Blouw).
 // One per batch (not per disbursement). 2FA-enforced.
 
 model ReleaseSignoff {
@@ -781,7 +781,7 @@ model ReleaseSignoff {
 
 // --------------------------------------------------------------- PaymentRecord
 //
-// Stage 5 — bank confirmation + POP attachment. One per disbursement.
+// Stage 5 â€” bank confirmation + POP attachment. One per disbursement.
 
 model PaymentRecord {
   id                String    @id @default(uuid()) @db.Uuid
@@ -910,7 +910,7 @@ model OfftakerSubmission {
 
 // ===== Unified Billing + Master Calendar (0010-0011) =====
 // =====================================================================
-// PRISMA MODEL SNIPPETS — paste into prisma/schema.prisma
+// PRISMA MODEL SNIPPETS â€” paste into prisma/schema.prisma
 // After pasting:  npx prisma generate --schema=prisma/schema.prisma
 // =====================================================================
 // Source: supabase/migrations/0010_billing.sql + 0011_calendar.sql
@@ -1036,6 +1036,7 @@ model Customer {
 
   // relation field name stays `invoices` so API/UI keep working
   invoices          ArInvoice[]
+  workflowInstances WorkflowInstance[]
   events            CalendarEvent[]
 
   @@index([tenantId])
@@ -1164,4 +1165,160 @@ model CalendarEvent {
   @@map("calendar_events")
 }
 
+
+
+// =====================================================================
+// Workflow Templates + Instances (0012)
+// =====================================================================
+
+enum WorkflowInstanceStatus {
+  discovery
+  proposal
+  contracting
+  inception
+  execution
+  complete
+  cancelled
+  on_hold
+
+  @@map("workflow_instance_status")
+}
+
+enum WorkflowActivityStatus {
+  pending
+  in_progress
+  awaiting_review
+  complete
+  blocked
+  escalated
+  skipped
+
+  @@map("workflow_activity_status")
+}
+
+enum PricingTier {
+  A_strategic_partner
+  B_fixed_engagement
+  C_tactical_sprint
+
+  @@map("pricing_tier")
+}
+
+model WorkflowTemplate {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  name              String
+  slug              String
+  description       String?
+  version           String   @default("v1")
+  ownerUnitSlug     String?  @map("owner_unit_slug")
+  isActive          Boolean  @default(true) @map("is_active")
+  metadata          Json     @default("{}")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?  @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  phases    WorkflowTemplatePhase[]
+  instances WorkflowInstance[]
+
+  @@unique([tenantId, slug, version])
+  @@index([tenantId])
+  @@map("workflow_templates")
+}
+
+model WorkflowTemplatePhase {
+  id          String  @id @default(uuid()) @db.Uuid
+  templateId  String  @map("template_id") @db.Uuid
+  code        String
+  name        String
+  description String?
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  template   WorkflowTemplate           @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  activities WorkflowTemplateActivity[]
+
+  @@unique([templateId, code])
+  @@index([templateId])
+  @@map("workflow_template_phases")
+}
+
+model WorkflowTemplateActivity {
+  id                        String   @id @default(uuid()) @db.Uuid
+  phaseId                   String   @map("phase_id") @db.Uuid
+  name                      String
+  description               String?
+  sortOrder                 Int      @default(0) @map("sort_order")
+  responsibleRole           String?  @map("responsible_role")
+  accountableRole           String?  @map("accountable_role")
+  consultedRoles            String[] @map("consulted_roles")
+  informedRoles             String[] @map("informed_roles")
+  estHoursDirector          Decimal? @default(0) @map("est_hours_director") @db.Decimal(5,2)
+  estHoursCoordinator       Decimal? @default(0) @map("est_hours_coordinator") @db.Decimal(5,2)
+  estAgentRuns              Int      @default(0) @map("est_agent_runs")
+  outputArtifact            String?  @map("output_artifact")
+  aiAgentSlug               String?  @map("ai_agent_slug")
+  requiresDirectorSignoff   Boolean  @default(false) @map("requires_director_signoff")
+
+  phase              WorkflowTemplatePhase      @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  instanceActivities WorkflowInstanceActivity[]
+
+  @@index([phaseId])
+  @@map("workflow_template_activities")
+}
+
+model WorkflowInstance {
+  id                String      @id @default(uuid()) @db.Uuid
+  tenantId          String      @map("tenant_id") @db.Uuid
+  templateId        String      @map("template_id") @db.Uuid
+  customerId        String?     @map("customer_id") @db.Uuid
+  name              String
+  pricingTier       PricingTier? @map("pricing_tier")
+  status            WorkflowInstanceStatus @default(discovery)
+  currentPhaseCode  String?     @map("current_phase_code")
+  valueZar          Decimal?    @default(0) @map("value_zar") @db.Decimal(14,2)
+  startedAt         DateTime?   @map("started_at") @db.Timestamptz
+  dueAt             DateTime?   @map("due_at") @db.Timestamptz
+  completedAt       DateTime?   @map("completed_at") @db.Timestamptz
+  notes             String?
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId   String?     @map("created_by_user_id") @db.Uuid
+  updatedAt         DateTime    @default(now()) @map("updated_at") @db.Timestamptz
+
+  template   WorkflowTemplate           @relation(fields: [templateId], references: [id])
+  customer   Customer?                  @relation(fields: [customerId], references: [id])
+  activities WorkflowInstanceActivity[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
+  @@map("workflow_instances")
+}
+
+model WorkflowInstanceActivity {
+  id                    String    @id @default(uuid()) @db.Uuid
+  instanceId            String    @map("instance_id") @db.Uuid
+  templateActivityId    String    @map("template_activity_id") @db.Uuid
+  assignedUserId        String?   @map("assigned_user_id") @db.Uuid
+  status                WorkflowActivityStatus @default(pending)
+  startedAt             DateTime? @map("started_at") @db.Timestamptz
+  dueAt                 DateTime? @map("due_at") @db.Timestamptz
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz
+  outputData            Json      @default("{}") @map("output_data")
+  notes                 String?
+  escalatedToDirector   Boolean   @default(false) @map("escalated_to_director")
+  escalationReason      String?   @map("escalation_reason")
+  directorSignedOff     Boolean   @default(false) @map("director_signed_off")
+  directorSignoffAt     DateTime? @map("director_signoff_at") @db.Timestamptz
+  directorSignoffBy     String?   @map("director_signoff_by") @db.Uuid
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  instance         WorkflowInstance         @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  templateActivity WorkflowTemplateActivity @relation(fields: [templateActivityId], references: [id])
+
+  @@index([instanceId])
+  @@index([assignedUserId])
+  @@index([status])
+  @@map("workflow_instance_activities")
+}
 
