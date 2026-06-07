@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Shell, type Hotkey } from '../../components/ui/Shell';
 import { Card } from '../../components/ui/Card';
 
@@ -12,13 +12,15 @@ const HOTKEYS: Hotkey[] = [
   { key: 'F7',  label: 'Cash flow',        href: '/cc/director?p=cash' },
   { key: 'F8',  label: 'Report builder',   href: '/ai/quarterly' },
   { key: 'F9',  label: 'User management',  href: '/cc/director?p=users' },
-  { key: 'F10', label: 'Billing',          href: '/billing/subscription' },
-  // Disbursement governance (Sunshines Part 1 — Hempire payment verification process)
+  { key: 'F10', label: 'Billing',          href: '/cc/billing' },             // AR Group Ledger
+  // Disbursement governance (Sunshines Part 1 â€” Hempire payment verification process)
   { key: 'F11', label: 'Verifications',    href: '/cc/verifications' },     // Stage 3 - Solly
   { key: 'F12', label: 'Authorisations',   href: '/cc/authorisations' },    // Stage 4 - Dr Blouw
   { key: 'P',   label: 'Payment loader',   href: '/payments/loader' },      // Stage 5 - Bookkeeper
   { key: 'E',   label: 'ECRDA dashboard',  href: '/cc/ecrda' },             // Stage 6 - ECRDA (read-only)
   { key: 'M',   label: 'My Farm portal',   href: '/my-farm' },              // Stage 2 - farmer-facing preview
+  { key: 'C',   label: 'Calendar',         href: '/cc/calendar' },           // NEW Master Calendar
+  { key: 'S',   label: 'Subscription',     href: '/billing/subscription' },  // legacy Stripe SaaS billing
 ];
 
 export function DirectorCC() {
@@ -48,10 +50,10 @@ export function DirectorCC() {
         </div>
       </Card>
 
-      {/* Tenants & workspaces — quick access to all 3Wi PTY Ltd tenant hubs */}
+      {/* Tenants & workspaces â€” quick access to all 3Wi PTY Ltd tenant hubs */}
       <Card title="Tenants &amp; workspaces" className="mt-4">
         <div className="flex flex-wrap gap-2">
-          {/* 3WI Pty Ltd (RN) — parent holdco */}
+          {/* 3WI Pty Ltd (RN) â€” parent holdco */}
           <Link
             to="/tenants/3wi-pty-ltd"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1F4D2C] text-white hover:bg-[#163B21] font-semibold text-sm"
@@ -60,7 +62,7 @@ export function DirectorCC() {
             Open 3WI Pty Ltd (RN)
           </Link>
 
-          {/* IBS (active — fully built out) */}
+          {/* IBS (active â€” fully built out) */}
           <Link
             to="/tenants/ibs"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3F1101] text-[#FDF31C] hover:bg-[#2a0a01] font-semibold text-sm"
@@ -115,7 +117,7 @@ export function DirectorCC() {
           </Link>
         </div>
         <p className="text-xs text-slate-500 mt-2">
-          All 3Wi PTY Ltd tenants. IBS, Wellies, Khula Woyise and MT Naidoo Properties are scaffolded; the two family trusts are placeholders ready to be defined — tell Claude founder, trustees, beneficiaries and asset register.
+          All 3Wi PTY Ltd tenants. IBS, Wellies, Khula Woyise and MT Naidoo Properties are scaffolded; the two family trusts are placeholders ready to be defined â€” tell Claude founder, trustees, beneficiaries and asset register.
         </p>
       </Card>
 
@@ -129,3 +131,4 @@ export function DirectorCC() {
     </Shell>
   );
 }
+
